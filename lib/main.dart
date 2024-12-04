@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:habify_3/screens/loginPage.dart'; // import the loginPage file for navigation
+import 'package:habify_3/screens/loginPage.dart'; // Import the loginPage file
+import 'package:habify_3/screens/home_page.dart'; // Import the homePage file for navigation
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-// main entry point of the app
+// Main entry point of the app
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -13,25 +15,29 @@ Future<void> main() async {
   runApp(HabifyApp());
 }
 
-// main widget for the app that extends StatelessWidget
+// Main widget for the app that extends StatelessWidget
 class HabifyApp extends StatelessWidget {
   const HabifyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // hides the debug banner
-      title: 'Habify', // title of the app
+      debugShowCheckedModeBanner: false, // Hide the debug banner
+      title: 'Habify', // Title of the app
       theme: ThemeData(
-        primarySwatch: Colors.green, // sets the primary theme color to green
+        primarySwatch: Colors.green, // Set the primary theme color to green
       ),
-      home:
-          SplashScreen(), // displays the SplashScreen widget as the initial page
+      initialRoute: '/', // Home page route
+      routes: {
+        '/': (context) => SplashScreen(), // SplashScreen route
+        '/login': (context) => LoginPage(), // LoginPage route
+        '/home': (context) => HomePage(), // HomePage route after login
+      },
     );
   }
 }
 
-// splashScreen widget which extends StatefulWidget to manage state
+// SplashScreen widget
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -39,28 +45,23 @@ class SplashScreen extends StatefulWidget {
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-// state class for the SplashScreen
+// State class for the SplashScreen
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // navigate to LoginPage after a 2-second delay
+    // Navigate to LoginPage after a 2-second delay
     Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (context) => LoginPage()), // navigate to the login page
-      );
+      Navigator.pushReplacementNamed(context, '/login'); // Navigate to login
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // background color of the splash screen
+      backgroundColor: Colors.white, // Background color of splash screen
       body: Center(
-        // displays the splash logo image in the center of the screen
-        child: Image.asset('assets/splash_logo.png'),
+        child: Image.asset('assets/splash_logo.png'), // Display splash logo
       ),
     );
   }

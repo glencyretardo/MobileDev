@@ -1,14 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 import 'custom_bottom_navigation_bar.dart'; // Import the reusable nav bar
 
 class HomePage extends StatelessWidget {
-  final String userName = "Clarize"; // Replace with dynamic data
+  final String userName = "User"; // Replace with dynamic data
+  final FirebaseAuth _auth = FirebaseAuth.instance; // FirebaseAuth instance
+
+  // Function to handle sign-out
+  void signOut(BuildContext context) async {
+    try {
+      await _auth.signOut(); // Sign out using FirebaseAuth
+      print("User signed out");
+
+      // After sign-out, navigate to the login page and remove all previous routes
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/login',
+        (Route<dynamic> route) => false, // This clears all previous routes
+      );
+    } catch (e) {
+      print("Sign-out error: $e");
+      // Optionally, show an error message to the user
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error signing out. Please try again.")),
+      );
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false, // Removes the back button
         backgroundColor: Colors.transparent,
         elevation: 0,
         toolbarHeight: 100,
@@ -61,6 +86,16 @@ class HomePage extends StatelessWidget {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.exit_to_app, // Sign-out icon
+              size: 30,
+              color: Colors.black,
+            ),
+            onPressed: () => signOut(context), // Call sign-out function
+          ),
+        ],
       ),
       body: Column(
         children: [

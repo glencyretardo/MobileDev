@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habify_3/services/login_service.dart'; // Import the login service
 import 'signUp.dart'; // Import the signup page
 import 'home_page.dart'; // Import the homepage
 
@@ -10,21 +11,49 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  // Controllers for the fields
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  // Global key for unique identification of the form and for validation
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  void _login() {
+  final LoginService _loginService =
+      LoginService(); // Instance of the login service
+  bool _isLoading = false; // To show a loading indicator
+  bool _obscureText = true; // For password visibility
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscureText = !_obscureText; // Toggle visibility
+    });
+  }
+
+  void _login() async {
     if (_formKey.currentState!.validate()) {
-      // Simulating a successful login process
-      // Navigate to HomePage upon successful login
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage()),
-      );
+      setState(() {
+        _isLoading = true; // Start loading
+      });
+
+      final email = _emailController.text.trim();
+      final password = _passwordController.text.trim();
+
+      // Authenticate using LoginService (Firebase)
+      bool success = await _loginService.authenticate(email, password);
+
+      setState(() {
+        _isLoading = false; // Stop loading
+      });
+
+      if (success) {
+        // Navigate to HomePage upon successful login
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+      } else {
+        // Show an error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Invalid email or password')),
+        );
+      }
     }
   }
 
@@ -34,27 +63,32 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior
+              .onDrag, // Dismiss keyboard on drag
+          padding: EdgeInsets.only(
+            left: 24.0,
+            right: 24.0,
+            bottom: MediaQuery.of(context).viewInsets.bottom +
+                24.0, // Adjust bottom padding for keyboard
+          ),
           child: Center(
             child: Form(
               key: _formKey,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 150), // Adjust vertical spacing
-                  // Logo part
+                  const SizedBox(height: 150),
                   Image.asset(
                     'assets/splash_logo.png',
                     height: 150,
                     width: 150,
                   ),
-                  const SizedBox(height: 40), // Space after logo
+                  const SizedBox(height: 40),
                   const Text(
                     'Welcome to Habify',
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(
-                      height: 30), // Space between text and input fields
+                  const SizedBox(height: 30),
                   TextFormField(
                     controller: _emailController,
                     decoration: const InputDecoration(
@@ -81,19 +115,27 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 20),
                   TextFormField(
                     controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
+                    obscureText: _obscureText,
+                    decoration: InputDecoration(
                       labelText: 'Password',
-                      border: OutlineInputBorder(
+                      border: const OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(15)),
                       ),
-                      focusedBorder: OutlineInputBorder(
+                      focusedBorder: const OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.blue, width: 2),
                         borderRadius: BorderRadius.all(Radius.circular(15)),
                       ),
-                      enabledBorder: OutlineInputBorder(
+                      enabledBorder: const OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.grey, width: 1),
                         borderRadius: BorderRadius.all(Radius.circular(15)),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureText
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: _togglePasswordVisibility,
                       ),
                     ),
                     validator: (value) {
@@ -112,13 +154,15 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _login,
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                    ),
-                    child: const Text('Log In'),
-                  ),
+                  _isLoading
+                      ? CircularProgressIndicator()
+                      : ElevatedButton(
+                          onPressed: _login,
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 50),
+                          ),
+                          child: const Text('Log In'),
+                        ),
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -126,7 +170,6 @@ class _LoginPageState extends State<LoginPage> {
                       const Text("Don’t have an account?"),
                       TextButton(
                         onPressed: () {
-                          // Navigate to the SignupPage when clicked
                           Navigator.push(
                             context,
                             MaterialPageRoute(

@@ -19,6 +19,10 @@ class _SignupPageState extends State<SignupPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _birthdayController = TextEditingController();
 
+  bool _isPasswordVisible = false; // For toggling password visibility
+  bool _isConfirmPasswordVisible =
+      false; // For toggling confirm password visibility
+
   void _signUp() {
     if (_formKey.currentState!.validate()) {
       SignupService.signUp(
@@ -28,6 +32,21 @@ class _SignupPageState extends State<SignupPage> {
         birthday: _birthdayController.text,
         context: context,
       );
+    }
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+
+    if (pickedDate != null) {
+      setState(() {
+        _birthdayController.text = pickedDate.toIso8601String().split('T')[0];
+      });
     }
   }
 
@@ -81,12 +100,13 @@ class _SignupPageState extends State<SignupPage> {
               ),
               const SizedBox(height: 20),
 
-              // Birthday Field
+              // Birthday Field with Calendar Picker
               TextFormField(
                 controller: _birthdayController,
-                keyboardType: TextInputType.datetime,
+                readOnly: true, // Prevent manual input
+                onTap: () => _selectDate(context),
                 decoration: const InputDecoration(
-                  labelText: 'Birthday (YYYY-MM-DD)',
+                  labelText: 'Birthday',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(15)),
                   ),
@@ -94,14 +114,11 @@ class _SignupPageState extends State<SignupPage> {
                     borderSide: BorderSide(color: Colors.blue, width: 2),
                     borderRadius: BorderRadius.all(Radius.circular(15)),
                   ),
+                  suffixIcon: Icon(Icons.calendar_today),
                 ),
                 validator: (value) {
-                  final dateRegex = RegExp(r'^\d{4}-\d{2}-\d{2}$');
                   if (value == null || value.isEmpty) {
                     return 'Birthday is required';
-                  }
-                  if (!dateRegex.hasMatch(value)) {
-                    return 'Enter a valid date (YYYY-MM-DD)';
                   }
                   return null;
                 },
@@ -135,18 +152,30 @@ class _SignupPageState extends State<SignupPage> {
               ),
               const SizedBox(height: 20),
 
-              // Password Field
+              // Password Field with Eye Icon
               TextFormField(
                 controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
+                obscureText: !_isPasswordVisible,
+                decoration: InputDecoration(
                   labelText: 'Password',
-                  border: OutlineInputBorder(
+                  border: const OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(15)),
                   ),
-                  focusedBorder: OutlineInputBorder(
+                  focusedBorder: const OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.blue, width: 2),
                     borderRadius: BorderRadius.all(Radius.circular(15)),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
                   ),
                 ),
                 validator: (value) {
@@ -161,18 +190,30 @@ class _SignupPageState extends State<SignupPage> {
               ),
               const SizedBox(height: 20),
 
-              // Confirm Password Field
+              // Confirm Password Field with Eye Icon
               TextFormField(
                 controller: _confirmPasswordController,
-                obscureText: true,
-                decoration: const InputDecoration(
+                obscureText: !_isConfirmPasswordVisible,
+                decoration: InputDecoration(
                   labelText: 'Confirm Password',
-                  border: OutlineInputBorder(
+                  border: const OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(15)),
                   ),
-                  focusedBorder: OutlineInputBorder(
+                  focusedBorder: const OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.blue, width: 2),
                     borderRadius: BorderRadius.all(Radius.circular(15)),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isConfirmPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                      });
+                    },
                   ),
                 ),
                 validator: (value) {
