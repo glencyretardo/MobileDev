@@ -100,15 +100,19 @@ class _HomePageState extends State<HomePage> {
         children: [
           HorizontalCalendar(),
           Padding(
-            padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+            padding: const EdgeInsets.only(
+              left: 16.0,
+              top: 32.0,
+              bottom: 32.0,
+            ),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Container(
-                width: 150,
-                height: 40,
+                width: 120,
+                height: 30,
                 decoration: BoxDecoration(
-                  color: Color(0xFFEEAA3C),
-                  borderRadius: BorderRadius.circular(50),
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -116,45 +120,45 @@ class _HomePageState extends State<HomePage> {
                     child: DropdownButton<String>(
                       value: selectedFilter,
                       isExpanded: true,
-                      dropdownColor: Color(0xFFEEAA3C),
+                      dropdownColor: Colors.grey[200],
                       icon: Icon(
                         Icons.arrow_drop_down,
-                        color: Colors.white,
+                        color: Colors.black,
                       ),
                       items: [
                         DropdownMenuItem(
                           value: "ALL",
                           child: Text(
                             "ALL",
-                            style: TextStyle(color: Colors.white, fontSize: 14),
+                            style: TextStyle(color: Colors.black, fontSize: 12),
                           ),
                         ),
                         DropdownMenuItem(
                           value: "ANYTIME",
                           child: Text(
                             "ANYTIME",
-                            style: TextStyle(color: Colors.white, fontSize: 14),
+                            style: TextStyle(color: Colors.black, fontSize: 12),
                           ),
                         ),
                         DropdownMenuItem(
                           value: "MORNING",
                           child: Text(
                             "MORNING",
-                            style: TextStyle(color: Colors.white, fontSize: 14),
+                            style: TextStyle(color: Colors.black, fontSize: 12),
                           ),
                         ),
                         DropdownMenuItem(
                           value: "AFTERNOON",
                           child: Text(
                             "AFTERNOON",
-                            style: TextStyle(color: Colors.white, fontSize: 14),
+                            style: TextStyle(color: Colors.black, fontSize: 12),
                           ),
                         ),
                         DropdownMenuItem(
                           value: "EVENING",
                           child: Text(
                             "EVENING",
-                            style: TextStyle(color: Colors.white, fontSize: 14),
+                            style: TextStyle(color: Colors.black, fontSize: 12),
                           ),
                         ),
                       ],
@@ -172,9 +176,9 @@ class _HomePageState extends State<HomePage> {
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
-                  .collection('users') // Target the 'users' collection
-                  .doc(widget.userId) // Get the specific user document
-                  .collection('habits') // Get the 'habits' subcollection
+                  .collection('users')
+                  .doc(widget.userId)
+                  .collection('habits')
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
@@ -198,19 +202,19 @@ class _HomePageState extends State<HomePage> {
                     int colorValue = habit['color'];
                     bool isCompleted = habit['isCompleted'] ?? false;
                     Color habitColor =
-                        isCompleted ? Colors.grey : Color(colorValue);
+                        isCompleted ? Colors.grey[200]! : Color(colorValue);
 
                     return Container(
                       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: habitColor,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(30),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12.0),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 10.0, horizontal: 12.0),
                         child: Row(
                           children: [
-                            // Checkbox placed to the left, outside the box
                             Checkbox(
                               value: isCompleted,
                               onChanged: (value) {
@@ -221,12 +225,9 @@ class _HomePageState extends State<HomePage> {
                                     .doc(habit.id)
                                     .update({'isCompleted': value});
 
-                                setState(() {
-                                  // Trigger a rebuild after the state update
-                                });
+                                setState(() {});
                               },
                             ),
-                            // Habit Name Text
                             Expanded(
                               child: Text(
                                 habitName,
@@ -239,6 +240,11 @@ class _HomePageState extends State<HomePage> {
                                       : null,
                                 ),
                               ),
+                            ),
+                            Icon(
+                              Icons.more_horiz,
+                              color:
+                                  isCompleted ? Colors.black45 : Colors.white,
                             ),
                           ],
                         ),
