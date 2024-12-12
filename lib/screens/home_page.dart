@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'profile.dart';
-import 'history_page.dart';
-import 'calendar.dart';
-import 'package:habify_3/transaction/addHabit.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'custom_bottom_navigation_bar.dart';
+import 'package:habify_3/transaction/addHabit.dart';
+import 'calendar.dart';
 
 class HomePage extends StatefulWidget {
   final String userId;
@@ -16,12 +14,36 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String? selectedFilter = "ALL"; // State variable to store the selected value
+  String? selectedFilter = "ALL";
+
+  @override
+  void initState() {
+    super.initState();
+    testFirestoreQuery(); // Call the debug function here
+  }
+
+  void testFirestoreQuery() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('habits')
+          .where('userId', isEqualTo: widget.userId)
+          .get();
+
+      print("DEBUG: Found ${snapshot.docs.length} habits");
+      for (var doc in snapshot.docs) {
+        print("Habit Name: ${doc['habitName']}, Color: ${doc['color']}");
+      }
+
+      if (snapshot.docs.isEmpty) {
+        print("No habits found for this user.");
+      }
+    } catch (e) {
+      print("Error fetching habits: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final String userName = "User"; // Replace with dynamic data
-
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -76,9 +98,9 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          HorizontalCalendar(), // Custom calendar widget
+          HorizontalCalendar(),
           Padding(
-            padding: const EdgeInsets.only(left: 16.0, top: 32.0),
+            padding: const EdgeInsets.only(left: 16.0, top: 16.0),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Container(
@@ -92,10 +114,9 @@ class _HomePageState extends State<HomePage> {
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
-                      value: selectedFilter, // Bind the state variable
+                      value: selectedFilter,
                       isExpanded: true,
                       dropdownColor: Color(0xFFEEAA3C),
-                      elevation: 0, // removes the shadow
                       icon: Icon(
                         Icons.arrow_drop_down,
                         color: Colors.white,
@@ -139,9 +160,8 @@ class _HomePageState extends State<HomePage> {
                       ],
                       onChanged: (value) {
                         setState(() {
-                          selectedFilter = value; // Update the state
+                          selectedFilter = value;
                         });
-                        print("Selected: $value");
                       },
                     ),
                   ),
@@ -150,9 +170,83 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           Expanded(
-            child: Center(
-              child:
-                  Text("Today's Page Content"), // Replace with actual content
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('users') // Target the 'users' collection
+                  .doc(widget.userId) // Get the specific user document
+                  .collection('habits') // Get the 'habits' subcollection
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(child: Text("Something went wrong!"));
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(child: Text("No habits found."));
+                }
+
+                final habits = snapshot.data!.docs;
+
+                return ListView.builder(
+                  itemCount: habits.length,
+                  itemBuilder: (context, index) {
+                    final habit = habits[index];
+                    final habitName = habit['habitName'];
+                    int colorValue = habit['color'];
+                    bool isCompleted = habit['isCompleted'] ?? false;
+                    Color habitColor =
+                        isCompleted ? Colors.grey : Color(colorValue);
+
+                    return Container(
+                      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: habitColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12.0),
+                        child: Row(
+                          children: [
+                            // Checkbox placed to the left, outside the box
+                            Checkbox(
+                              value: isCompleted,
+                              onChanged: (value) {
+                                FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(widget.userId)
+                                    .collection('habits')
+                                    .doc(habit.id)
+                                    .update({'isCompleted': value});
+
+                                setState(() {
+                                  // Trigger a rebuild after the state update
+                                });
+                              },
+                            ),
+                            // Habit Name Text
+                            Expanded(
+                              child: Text(
+                                habitName,
+                                style: TextStyle(
+                                  color: isCompleted
+                                      ? Colors.black45
+                                      : Colors.white,
+                                  decoration: isCompleted
+                                      ? TextDecoration.lineThrough
+                                      : null,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
             ),
           ),
         ],
