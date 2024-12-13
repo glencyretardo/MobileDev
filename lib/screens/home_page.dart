@@ -222,12 +222,20 @@ class _HomePageState extends State<HomePage> {
                   return Center(child: Text("No habits found."));
                 }
 
+                // Fetch and sort the habits
                 final habits = snapshot.data!.docs;
+                final sortedHabits = [...habits]..sort((a, b) {
+                    final isCompletedA = a['isCompleted'] ?? false;
+                    final isCompletedB = b['isCompleted'] ?? false;
+                    return isCompletedA == isCompletedB
+                        ? 0
+                        : (isCompletedA ? 1 : -1);
+                  });
 
                 return ListView.builder(
-                  itemCount: habits.length,
+                  itemCount: sortedHabits.length,
                   itemBuilder: (context, index) {
-                    final habit = habits[index];
+                    final habit = sortedHabits[index];
                     final habitName = habit['habitName'];
                     int colorValue = habit['color'];
                     bool isCompleted = habit['isCompleted'] ?? false;
