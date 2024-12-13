@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class HorizontalCalendar extends StatelessWidget {
+  final DateTime initialDate; // Add this property
+  final Function(DateTime) onDateSelected; // Add this property
   final ScrollController scrollController = ScrollController();
 
-  HorizontalCalendar() {
-    // Automatically center the view to today's date after the first build
+  HorizontalCalendar({
+    Key? key,
+    required this.initialDate, // Required parameter for initial date
+    required this.onDateSelected, // Required parameter for date selection callback
+  }) : super(key: key) {
+    // Automatically center the view to the initial date after the first build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       double todayIndex =
           30; // Today is the center of the range (30 days before + today)
@@ -26,20 +32,20 @@ class HorizontalCalendar extends StatelessWidget {
         itemCount: 61, // Total: 30 days before + today + 30 days after
         itemBuilder: (context, index) {
           DateTime date = today.subtract(Duration(days: 30 - index));
-          bool isToday = date.day == today.day &&
-              date.month == today.month &&
-              date.year == today.year;
+          bool isSelected = date.day == initialDate.day &&
+              date.month == initialDate.month &&
+              date.year == initialDate.year;
 
           return GestureDetector(
             onTap: () {
-              // Handle date tap
-              print("Selected date: ${DateFormat('yyyy-MM-dd').format(date)}");
+              onDateSelected(
+                  date); // Trigger the callback with the selected date
             },
             child: Container(
               width: 60,
               margin: EdgeInsets.symmetric(horizontal: 8),
               decoration: BoxDecoration(
-                color: isToday ? Colors.blue : Colors.grey[200],
+                color: isSelected ? Colors.blue : Colors.grey[200],
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Column(
@@ -50,7 +56,7 @@ class HorizontalCalendar extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: isToday ? Colors.white : Colors.black,
+                      color: isSelected ? Colors.white : Colors.black,
                     ),
                   ),
                   SizedBox(height: 5),
@@ -58,7 +64,7 @@ class HorizontalCalendar extends StatelessWidget {
                     date.day.toString(), // Day number
                     style: TextStyle(
                       fontSize: 14,
-                      color: isToday ? Colors.white : Colors.black,
+                      color: isSelected ? Colors.white : Colors.black,
                     ),
                   ),
                 ],
