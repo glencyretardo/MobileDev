@@ -42,6 +42,35 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // Function to show the habit details in a dialog
+  void _showHabitDetails(BuildContext context, DocumentSnapshot habit) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(habit['habitName']),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Repetition: ${habit['days'] ?? 'Not Set'}'),
+              Text('Time: ${habit['time'] ?? 'Not Set'}'),
+              Text('Notes: ${habit['note'] ?? 'No notes'}'),
+              Text(
+                  'Status: ${habit['isCompleted'] ? 'Completed' : 'Not Completed'}'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,7 +115,7 @@ class _HomePageState extends State<HomePage> {
                   },
                   icon: Icon(
                     Icons.add,
-                    size: 30,
+                    size: 40,
                     color: Color(0xFFEEAA3C),
                   ),
                 ),
@@ -108,8 +137,8 @@ class _HomePageState extends State<HomePage> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Container(
-                width: 120,
-                height: 30,
+                width: 160,
+                height: 50,
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(20),
@@ -179,6 +208,7 @@ class _HomePageState extends State<HomePage> {
                   .collection('users')
                   .doc(widget.userId)
                   .collection('habits')
+                  .orderBy('createdAt', descending: false)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
@@ -204,49 +234,53 @@ class _HomePageState extends State<HomePage> {
                     Color habitColor =
                         isCompleted ? Colors.grey[200]! : Color(colorValue);
 
-                    return Container(
-                      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: habitColor,
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10.0, horizontal: 12.0),
-                        child: Row(
-                          children: [
-                            Checkbox(
-                              value: isCompleted,
-                              onChanged: (value) {
-                                FirebaseFirestore.instance
-                                    .collection('users')
-                                    .doc(widget.userId)
-                                    .collection('habits')
-                                    .doc(habit.id)
-                                    .update({'isCompleted': value});
+                    return GestureDetector(
+                      onTap: () => _showHabitDetails(context, habit),
+                      child: Container(
+                        margin:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: habitColor,
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10.0, horizontal: 12.0),
+                          child: Row(
+                            children: [
+                              Checkbox(
+                                value: isCompleted,
+                                onChanged: (value) {
+                                  FirebaseFirestore.instance
+                                      .collection('users')
+                                      .doc(widget.userId)
+                                      .collection('habits')
+                                      .doc(habit.id)
+                                      .update({'isCompleted': value});
 
-                                setState(() {});
-                              },
-                            ),
-                            Expanded(
-                              child: Text(
-                                habitName,
-                                style: TextStyle(
-                                  color: isCompleted
-                                      ? Colors.black45
-                                      : Colors.white,
-                                  decoration: isCompleted
-                                      ? TextDecoration.lineThrough
-                                      : null,
+                                  setState(() {});
+                                },
+                              ),
+                              Expanded(
+                                child: Text(
+                                  habitName,
+                                  style: TextStyle(
+                                    color: isCompleted
+                                        ? Colors.black45
+                                        : Colors.white,
+                                    decoration: isCompleted
+                                        ? TextDecoration.lineThrough
+                                        : null,
+                                  ),
                                 ),
                               ),
-                            ),
-                            Icon(
-                              Icons.more_horiz,
-                              color:
-                                  isCompleted ? Colors.black45 : Colors.white,
-                            ),
-                          ],
+                              Icon(
+                                Icons.more_horiz,
+                                color:
+                                    isCompleted ? Colors.black45 : Colors.white,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -260,3 +294,5 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+//repitition edit butangan everyday
