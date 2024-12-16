@@ -15,6 +15,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String? selectedFilter = "ALL";
+  DateTime selectedDate = DateTime.now(); // To track the selected date
 
   @override
   void initState() {
@@ -127,7 +128,14 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          HorizontalCalendar(),
+          HorizontalCalendar(
+            initialDate: selectedDate,
+            onDateSelected: (date) {
+              setState(() {
+                selectedDate = date; // Update selected date
+              });
+            },
+          ),
           Padding(
             padding: const EdgeInsets.only(
               left: 16.0,
@@ -222,25 +230,38 @@ class _HomePageState extends State<HomePage> {
                   return Center(child: Text("No habits found."));
                 }
 
-                // Fetch and sort the habits
+                // Get day initials for the selected date
+                final dayInitials = ["S", "M", "T", "W", "Th", "F", "Sa"];
+                final selectedDayIndex = selectedDate.weekday % 7; // Sunday = 0
+                final selectedDayInitial = dayInitials[selectedDayIndex];
+
+                // Filter habits based on the selected date
                 final habits = snapshot.data!.docs;
-                final sortedHabits = [...habits]..sort((a, b) {
-                    final isCompletedA = a['isCompleted'] ?? false;
-                    final isCompletedB = b['isCompleted'] ?? false;
-                    return isCompletedA == isCompletedB
-                        ? 0
-                        : (isCompletedA ? 1 : -1);
-                  });
+                final filteredHabits = habits.where((habit) {
+                  final days = habit['days'] ?? [];
+                  if (days is List) {
+                    return days.contains(selectedDayInitial);
+                  }
+                  return false;
+                }).toList();
+
+                if (filteredHabits.isEmpty) {
+                  return Center(
+                      child: Text("No habits for the selected date."));
+                }
 
                 return ListView.builder(
-                  itemCount: sortedHabits.length,
+                  itemCount: filteredHabits.length,
                   itemBuilder: (context, index) {
-                    final habit = sortedHabits[index];
+                    final habit = filteredHabits[index];
                     final habitName = habit['habitName'];
                     int colorValue = habit['color'];
                     bool isCompleted = habit['isCompleted'] ?? false;
                     Color habitColor =
                         isCompleted ? Colors.grey[200]! : Color(colorValue);
+
+                    // Check if the selected date is in the future
+                    bool isFutureDate = selectedDate.isAfter(DateTime.now());
 
                     return GestureDetector(
                       onTap: () => _showHabitDetails(context, habit),
@@ -256,19 +277,21 @@ class _HomePageState extends State<HomePage> {
                               vertical: 10.0, horizontal: 12.0),
                           child: Row(
                             children: [
-                              Checkbox(
-                                value: isCompleted,
-                                onChanged: (value) {
-                                  FirebaseFirestore.instance
-                                      .collection('users')
-                                      .doc(widget.userId)
-                                      .collection('habits')
-                                      .doc(habit.id)
-                                      .update({'isCompleted': value});
+                              // Show checkbox only if the date is not in the future
+                              if (!isFutureDate)
+                                Checkbox(
+                                  value: isCompleted,
+                                  onChanged: (value) {
+                                    FirebaseFirestore.instance
+                                        .collection('users')
+                                        .doc(widget.userId)
+                                        .collection('habits')
+                                        .doc(habit.id)
+                                        .update({'isCompleted': value});
 
-                                  setState(() {});
-                                },
-                              ),
+                                    setState(() {});
+                                  },
+                                ),
                               Expanded(
                                 child: Text(
                                   habitName,

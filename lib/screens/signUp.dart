@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:habify_3/services/signup_service.dart';
+import 'package:provider/provider.dart';
+import 'package:habify_3/providers/auth_provider.dart'; // Import AuthProvider
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -23,15 +25,50 @@ class _SignupPageState extends State<SignupPage> {
   bool _isConfirmPasswordVisible =
       false; // For toggling confirm password visibility
 
-  void _signUp() {
+  void _signUp() async {
     if (_formKey.currentState!.validate()) {
-      SignupService.signUp(
-        email: _emailController.text,
-        password: _passwordController.text,
-        username: _usernameController.text,
-        birthday: _birthdayController.text,
-        context: context,
-      );
+      try {
+        // Sign up the user using AuthProvider
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        await authProvider.signUp(
+          _emailController.text,
+          _passwordController.text,
+        );
+
+        // Get the newly created user ID
+        final userId = authProvider.currentUser?.uid;
+
+        // Save additional user data to Firestore
+        if (userId != null) {
+          // Store user data in Firestore
+          await FirebaseFirestore.instance.collection('users').doc(userId).set({
+            'username': _usernameController.text,
+            'email': _emailController.text,
+            'birthday': _birthdayController.text,
+            'created_at': FieldValue.serverTimestamp(), // Add a timestamp
+          });
+
+          // Debugging statement for Firestore storage success
+          print(
+              'User data successfully stored in Firestore for user ID: $userId');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Account created successfully! Please log in.')),
+          );
+
+          // Navigate to Login Page
+          Navigator.pushReplacementNamed(context, '/login');
+        } else {
+          // Debugging statement for missing user ID
+          print('Error: User ID is null after sign-up');
+        }
+      } catch (e) {
+        // Show error message if sign-up fails
+        print('Error during sign-up: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Sign up failed: $e')),
+        );
+      }
     }
   }
 
@@ -66,13 +103,13 @@ class _SignupPageState extends State<SignupPage> {
             children: [
               const SizedBox(height: 30),
               Image.asset(
-                'assets/splash_logo.png',
+                'assets/habify_logo.png',
                 height: 120,
                 width: 120,
               ),
               const SizedBox(height: 20),
               const Text(
-                'Start your productivity journey with Habify',
+                'Start your productivity journey now',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),

@@ -8,6 +8,10 @@ import 'home_page.dart';
 import 'package:habify_3/providers/auth_provider.dart'; // Import AuthProvider
 
 class ProfilePage extends StatefulWidget {
+  final String userId; // Add userId as a parameter
+
+  const ProfilePage({Key? key, required this.userId}) : super(key: key);
+
   @override
   _ProfilePageState createState() => _ProfilePageState();
 }
@@ -28,6 +32,12 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+
+    // Fetch the current user's information (this could be a placeholder for now)
+    final String username = authProvider.currentUser?.displayName ?? 'Username';
+    final String email = authProvider.currentUser?.email ?? 'user@example.com';
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Profile'),
@@ -36,6 +46,7 @@ class _ProfilePageState extends State<ProfilePage> {
         elevation: 0,
         foregroundColor: Colors.black,
       ),
+      backgroundColor: Colors.white, // bg color
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -59,7 +70,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 SizedBox(width: 20),
                 Expanded(
                   child: Text(
-                    'Username',
+                    username, // Display the user's name here
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -79,25 +90,6 @@ class _ProfilePageState extends State<ProfilePage> {
             }),
           ],
         ),
-      ),
-      bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: 2, // Set the selected index to the Profile tab
-        onTap: (index) {
-          if (index != 2) {
-            // Avoid redundant navigation for the current tab
-            if (index == 0) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => HomePage()),
-              );
-            } else if (index == 1) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => HistoryPage()),
-              );
-            }
-          }
-        },
       ),
     );
   }

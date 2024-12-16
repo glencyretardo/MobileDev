@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:habify_3/services/login_service.dart'; // Import the login service
+import 'package:habify_3/providers/auth_provider.dart'; // Import the AuthProvider
+import 'package:habify_3/screens/dashboard.dart';
+import 'package:provider/provider.dart'; // Import provider package
 import 'signUp.dart'; // Import the signup page
 import 'home_page.dart'; // Import the homepage
 
@@ -15,8 +17,6 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  final LoginService _loginService =
-      LoginService(); // Instance of the login service
   bool _isLoading = false; // To show a loading indicator
   bool _obscureText = true; // For password visibility
 
@@ -35,19 +35,33 @@ class _LoginPageState extends State<LoginPage> {
       final email = _emailController.text.trim();
       final password = _passwordController.text.trim();
 
-      // Authenticate using LoginService (Firebase)
-      bool success = await _loginService.authenticate(email, password);
+      // Authenticate using AuthProvider (Firebase)
+      AuthProvider authProvider =
+          Provider.of<AuthProvider>(context, listen: false);
+      bool success =
+          await authProvider.signInWithEmailPassword(email, password);
 
       setState(() {
         _isLoading = false; // Stop loading
       });
 
       if (success) {
-        // Navigate to HomePage upon successful login
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage()),
-        );
+        // Retrieve the logged-in user's UID
+        String? userId = authProvider.currentUser?.uid;
+
+        if (userId != null) {
+          // Navigate to HomePage, passing the UID
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DashboardPage(userId: userId), // Pass UID
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to retrieve user ID')),
+          );
+        }
       } else {
         // Show an error message
         ScaffoldMessenger.of(context).showSnackBar(
@@ -79,15 +93,15 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   const SizedBox(height: 150),
                   Image.asset(
-                    'assets/splash_logo.png',
-                    height: 150,
-                    width: 150,
+                    'assets/habify_logo.png',
+                    height: 200,
+                    width: 300,
                   ),
                   const SizedBox(height: 40),
-                  const Text(
-                    'Welcome to Habify',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
+                  // const Text(
+                  //   'Welcome to Habify',
+                  //   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  // ),
                   const SizedBox(height: 30),
                   TextFormField(
                     controller: _emailController,

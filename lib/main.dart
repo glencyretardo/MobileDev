@@ -1,68 +1,50 @@
 import 'package:flutter/material.dart';
-import 'package:habify_3/screens/loginPage.dart'; // Import the loginPage file
-import 'package:habify_3/screens/home_page.dart'; // Import the homePage file for navigation
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/rendering.dart';
 import 'firebase_options.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:habify_3/providers/auth_provider.dart' as CustomAuthProvider;
+import 'package:habify_3/screens/loginPage.dart';
+import 'package:habify_3/screens/dashboard.dart';
 
-// Main entry point of the app
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(HabifyApp());
+  //debugPaintSizeEnabled = true; // Enable debug mode
+
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => CustomAuthProvider.AuthProvider(),
+      child: const HabifyApp(),
+    ),
+  );
 }
 
-// Main widget for the app that extends StatelessWidget
 class HabifyApp extends StatelessWidget {
   const HabifyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Hide the debug banner
-      title: 'Habify', // Title of the app
+      debugShowCheckedModeBanner: false,
+      title: 'Habify',
       theme: ThemeData(
-        primarySwatch: Colors.green, // Set the primary theme color to green
+        primarySwatch: Colors.green,
       ),
-      initialRoute: '/', // Home page route
+      home: const LoginPage(), // Start the app with the LoginPage
       routes: {
-        '/': (context) => SplashScreen(), // SplashScreen route
-        '/login': (context) => LoginPage(), // LoginPage route
-        '/home': (context) => HomePage(), // HomePage route after login
+        '/login': (context) => LoginPage(),
+        // Navigate to Dashboard after login
+        '/dashboard': (context) {
+          final authProvider =
+              Provider.of<CustomAuthProvider.AuthProvider>(context);
+          final userId = authProvider.currentUser?.uid ?? '';
+          return DashboardPage(userId: userId);
+        },
       },
-    );
-  }
-}
-
-// SplashScreen widget
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
-
-  @override
-  _SplashScreenState createState() => _SplashScreenState();
-}
-
-// State class for the SplashScreen
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Navigate to LoginPage after a 2-second delay
-    Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pushReplacementNamed(context, '/login'); // Navigate to login
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white, // Background color of splash screen
-      body: Center(
-        child: Image.asset('assets/splash_logo.png'), // Display splash logo
-      ),
     );
   }
 }
