@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:habify_3/transaction/addHabit.dart';
 import 'calendar.dart';
+import 'package:habify_3/transaction/editHabit.dart';
 
 class HomePage extends StatefulWidget {
   final String userId;
@@ -43,7 +44,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Function to show the habit details in a dialog
   void _showHabitDetails(BuildContext context, DocumentSnapshot habit) {
     showDialog(
       context: context,
@@ -65,6 +65,76 @@ class _HomePageState extends State<HomePage> {
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showEditDeleteOptions(BuildContext context, DocumentSnapshot habit) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+      ),
+      builder: (BuildContext context) {
+        return Wrap(
+          children: [
+            ListTile(
+              leading: Icon(Icons.edit, color: Colors.blue),
+              title: Text('Edit'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditHabitPage(
+                      userId: widget.userId,
+                      habit: habit, // Pass the habit document here
+                    ),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.delete, color: Colors.red),
+              title: Text('Delete'),
+              onTap: () {
+                Navigator.pop(context);
+                _showDeleteConfirmation(context, habit);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, DocumentSnapshot habit) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Deletion'),
+          content: Text(
+              'Are you sure you want to delete this? It will permanently delete the data and cannot be restored.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(widget.userId)
+                    .collection('habits')
+                    .doc(habit.id)
+                    .delete();
+                Navigator.of(context).pop();
+              },
+              child: Text('Delete', style: TextStyle(color: Colors.red)),
             ),
           ],
         );
@@ -230,12 +300,10 @@ class _HomePageState extends State<HomePage> {
                   return Center(child: Text("No habits found."));
                 }
 
-                // Get day initials for the selected date
                 final dayInitials = ["S", "M", "T", "W", "Th", "F", "Sa"];
                 final selectedDayIndex = selectedDate.weekday % 7; // Sunday = 0
                 final selectedDayInitial = dayInitials[selectedDayIndex];
 
-                // Filter habits based on the selected date
                 final habits = snapshot.data!.docs;
                 final filteredHabits = habits.where((habit) {
                   final days = habit['days'] ?? [];
@@ -244,6 +312,13 @@ class _HomePageState extends State<HomePage> {
                   }
                   return false;
                 }).toList();
+
+// Sort habits: incomplete first, completed last
+                filteredHabits.sort((a, b) {
+                  final aCompleted = a['isCompleted'] ?? false;
+                  final bCompleted = b['isCompleted'] ?? false;
+                  return aCompleted == bCompleted ? 0 : (aCompleted ? 1 : -1);
+                });
 
                 if (filteredHabits.isEmpty) {
                   return Center(
@@ -260,7 +335,6 @@ class _HomePageState extends State<HomePage> {
                     Color habitColor =
                         isCompleted ? Colors.grey[200]! : Color(colorValue);
 
-                    // Check if the selected date is in the future
                     bool isFutureDate = selectedDate.isAfter(DateTime.now());
 
                     return GestureDetector(
@@ -277,7 +351,6 @@ class _HomePageState extends State<HomePage> {
                               vertical: 10.0, horizontal: 12.0),
                           child: Row(
                             children: [
-                              // Show checkbox only if the date is not in the future
                               if (!isFutureDate)
                                 Checkbox(
                                   value: isCompleted,
@@ -305,10 +378,15 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                               ),
-                              Icon(
-                                Icons.more_horiz,
-                                color:
-                                    isCompleted ? Colors.black45 : Colors.white,
+                              GestureDetector(
+                                onTap: () =>
+                                    _showEditDeleteOptions(context, habit),
+                                child: Icon(
+                                  Icons.more_horiz,
+                                  color: isCompleted
+                                      ? Colors.black45
+                                      : Colors.white,
+                                ),
                               ),
                             ],
                           ),
@@ -325,5 +403,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
-//repitition edit butangan everyday

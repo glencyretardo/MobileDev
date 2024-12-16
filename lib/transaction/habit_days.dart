@@ -107,6 +107,7 @@ class _HabitDaysState extends State<HabitDays> {
         ),
         centerTitle: false,
       ),
+     
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
         child: Column(
