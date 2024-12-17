@@ -183,217 +183,226 @@ class _AddHabitPageState extends State<AddHabitPage> {
           },
         ),
       ),
-      backgroundColor: Colors.white, //bg color
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Habit Name Field
-            Container(
-              width: 250,
-              child: TextField(
-                controller: habitNameController,
-                decoration: InputDecoration(
-                  hintText:
-                      "Habit Name", // Placeholder text that disappears when typing
-                  hintStyle: TextStyle(
-                    color: Colors.grey, // Placeholder color
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  suffixIcon: Icon(Icons.edit, color: Colors.black),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blue),
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                ),
-                style: TextStyle(fontSize: 18),
-              ),
-            ),
-            SizedBox(height: 20),
-            // COLOR Panel
-            GestureDetector(
-              onTap: _openColorPicker,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[200], // Light green background
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Color",
-                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                    ),
-                    Row(
-                      children: [
-                        Container(
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            color: selectedColor,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Icon(Icons.arrow_forward_ios,
-                            size: 16, color: Colors.grey),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            // DO IT AT Title
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "DO IT AT",
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFEEAA3C), // Yellow-orange color
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.more_vert,
-                      color: Colors.black), // Three dots icon
-                  onPressed: () {}, // Action when clicked (can be updated)
-                ),
-              ],
-            ),
-            SizedBox(height: 8),
-            // DO IT AT Panel with Dropdown
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.grey[200], // Light green background
-                borderRadius: BorderRadius.circular(8),
-              ),
-              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  isExpanded: true, // Expands dropdown to fill the container
-                  value: selectedTime,
-                  icon: Icon(Icons.arrow_drop_down, color: Colors.black),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedTime = newValue!;
-                    });
-                  },
-                  style: TextStyle(
-                    color: Colors
-                        .grey[700], // Sets the font color of dropdown items
-                    fontSize: 16, // Sets the font size of dropdown items
-                  ),
-                  items: <String>["Anytime", "Morning", "Afternoon", "Evening"]
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            // REPEAT Title
-            Text(
-              "REPEAT",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFFEEAA3C), // Yellow-orange color
-              ),
-            ),
-            SizedBox(height: 8),
-            // REPEAT Panel with updated text based on selection
-            GestureDetector(
-              onTap: _openDaysSelectionDialog,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[200], // Light green background
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      _getRepeatText(),
-                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                    ),
-                    Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            // Note Field
-            // Note Label above the TextField
-            Text(
-              "NOTE",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFFEEAA3C), // Yellow-orange color
-              ),
-            ),
-            SizedBox(height: 8),
-// Note Field inside a box
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.grey[200], // Light background color for the box
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: Colors.grey, // Optional border for emphasis
-                ),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: TextField(
-                controller: noteController,
-                decoration: InputDecoration(
-                  border:
-                      InputBorder.none, // Removes the default underline border
-                ),
-                style: TextStyle(fontSize: 16),
-                onChanged: (text) {
-                  setState(() {}); // Triggers UI update when text changes
-                },
-              ),
-            ),
-            SizedBox(height: 30),
-            // Save Button
-            // Save Button
-            Center(
-              child: Flexible(
-                child: ElevatedButton(
-                  onPressed: _saveHabit,
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                    backgroundColor: Color(0xFFEEAA3C),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    "Save Habit",
-                    style: TextStyle(
-                      fontSize: 18,
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        //  //bg color
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Habit Name Field
+              Container(
+                width: 250,
+                child: TextField(
+                  controller: habitNameController,
+                  decoration: InputDecoration(
+                    hintText:
+                        "Habit Name", // Placeholder text that disappears when typing
+                    hintStyle: TextStyle(
+                      color: Colors.grey, // Placeholder color
+                      fontSize: 25,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                    ),
+                    suffixIcon: Icon(Icons.edit, color: Colors.black),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue),
+                    ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                  ),
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+              SizedBox(height: 20),
+              // COLOR Panel
+              GestureDetector(
+                onTap: _openColorPicker,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200], // Light green background
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Color",
+                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                      ),
+                      Row(
+                        children: [
+                          Container(
+                            width: 16,
+                            height: 16,
+                            decoration: BoxDecoration(
+                              color: selectedColor,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Icon(Icons.arrow_forward_ios,
+                              size: 16, color: Colors.grey),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              // DO IT AT Title
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "DO IT AT",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFEEAA3C), // Yellow-orange color
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.more_vert,
+                        color: Colors.black), // Three dots icon
+                    onPressed: () {}, // Action when clicked (can be updated)
+                  ),
+                ],
+              ),
+              SizedBox(height: 8),
+              // DO IT AT Panel with Dropdown
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[200], // Light green background
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    isExpanded: true, // Expands dropdown to fill the container
+                    value: selectedTime,
+                    icon: Icon(Icons.arrow_drop_down, color: Colors.black),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedTime = newValue!;
+                      });
+                    },
+                    style: TextStyle(
+                      color: Colors
+                          .grey[700], // Sets the font color of dropdown items
+                      fontSize: 16, // Sets the font size of dropdown items
+                    ),
+                    items: <String>[
+                      "Anytime",
+                      "Morning",
+                      "Afternoon",
+                      "Evening"
+                    ].map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              // REPEAT Title
+              Text(
+                "REPEAT",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFEEAA3C), // Yellow-orange color
+                ),
+              ),
+              SizedBox(height: 8),
+              // REPEAT Panel with updated text based on selection
+              GestureDetector(
+                onTap: _openDaysSelectionDialog,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200], // Light green background
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _getRepeatText(),
+                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                      ),
+                      Icon(Icons.arrow_forward_ios,
+                          size: 16, color: Colors.grey),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              // Note Field
+              // Note Label above the TextField
+              Text(
+                "NOTE",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFEEAA3C), // Yellow-orange color
+                ),
+              ),
+              SizedBox(height: 8),
+// Note Field inside a box
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[200], // Light background color for the box
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.grey, // Optional border for emphasis
+                  ),
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: TextField(
+                  controller: noteController,
+                  decoration: InputDecoration(
+                    border: InputBorder
+                        .none, // Removes the default underline border
+                  ),
+                  style: TextStyle(fontSize: 16),
+                  onChanged: (text) {
+                    setState(() {}); // Triggers UI update when text changes
+                  },
+                ),
+              ),
+              SizedBox(height: 30),
+              // Save Button
+              // Save Button
+              Center(
+                child: Flexible(
+                  child: ElevatedButton(
+                    onPressed: _saveHabit,
+                    style: ElevatedButton.styleFrom(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                      backgroundColor: Color(0xFFEEAA3C),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      "Save Habit",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
