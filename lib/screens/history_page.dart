@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habify_3/transaction/streak.dart';
 
 class HistoryPage extends StatefulWidget {
   final String userId;
@@ -16,6 +17,7 @@ class _HistoryPageState extends State<HistoryPage> {
   final Color activeTabColor = const Color(0xFFEEAA3C); // Orange
   final Color inactiveTabColor = Colors.grey[300]!; // Light gray
   final Color backgroundColor = Colors.white;
+  final streakCalculator = StreakCalculator();
 
   @override
   Widget build(BuildContext context) {
@@ -117,15 +119,23 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   Widget _buildStatRow() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _statBox("CURRENT STREAK", "0"),
-          _statBox("COMPLETION RATE", "0"),
-        ],
-      ),
+    return FutureBuilder<int>(
+      future: streakCalculator.calculateStreak(widget.userId),
+      builder: (context, snapshot) {
+        String streakValue = snapshot.hasData ? "${snapshot.data}" : "0";
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _statBox("CURRENT STREAK", streakValue),
+              _statBox(
+                  "COMPLETION RATE", "0"), // Replace with actual calculation
+            ],
+          ),
+        );
+      },
     );
   }
 

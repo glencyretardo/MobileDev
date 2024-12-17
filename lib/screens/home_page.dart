@@ -27,8 +27,9 @@ class _HomePageState extends State<HomePage> {
   void testFirestoreQuery() async {
     try {
       final snapshot = await FirebaseFirestore.instance
-          .collection('habits')
-          .where('userId', isEqualTo: widget.userId)
+          .collection('users') // First, access the 'users' collection
+          .doc(widget.userId) // Then, access the specific user's document
+          .collection('habits') // Finally, access the 'habits' subcollection
           .get();
 
       print("DEBUG: Found ${snapshot.docs.length} habits");
