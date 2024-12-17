@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:habify_3/transaction/streak.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HistoryPage extends StatefulWidget {
   final String userId;
@@ -12,17 +13,12 @@ class HistoryPage extends StatefulWidget {
 
 class _HistoryPageState extends State<HistoryPage> {
   int selectedTabIndex = 0; // Track selected tab index
-
-  // Colors
-  final Color activeTabColor = const Color(0xFFEEAA3C); // Orange
-  final Color inactiveTabColor = Colors.grey[300]!; // Light gray
-  final Color backgroundColor = Colors.white;
   final streakCalculator = StreakCalculator();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           "History",
@@ -32,7 +28,7 @@ class _HistoryPageState extends State<HistoryPage> {
             color: Colors.black87,
           ),
         ),
-        backgroundColor: backgroundColor,
+        backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
       ),
@@ -68,7 +64,7 @@ class _HistoryPageState extends State<HistoryPage> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: inactiveTabColor.withOpacity(0.5),
+        color: Colors.grey[300]!.withOpacity(0.5),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -101,7 +97,7 @@ class _HistoryPageState extends State<HistoryPage> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? activeTabColor : Colors.transparent,
+            color: isSelected ? const Color(0xFFEEAA3C) : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
@@ -119,10 +115,27 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   Widget _buildStatRow() {
-    return FutureBuilder<int>(
-      future: streakCalculator.calculateStreak(widget.userId),
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _getWeeklyCompletion(widget.userId),
       builder: (context, snapshot) {
-        String streakValue = snapshot.hasData ? "${snapshot.data}" : "0";
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _statBox("CURRENT STREAK", "0"),
+                _statBox("COMPLETION RATE", "0/0"),
+              ],
+            ),
+          );
+        }
+
+        String streakValue =
+            snapshot.hasData ? "${snapshot.data?['streak']}" : "0";
+        String completionRate = snapshot.hasData
+            ? "${snapshot.data?['completed']}/${snapshot.data?['total']}"
+            : "0/0";
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -130,13 +143,58 @@ class _HistoryPageState extends State<HistoryPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _statBox("CURRENT STREAK", streakValue),
-              _statBox(
-                  "COMPLETION RATE", "0"), // Replace with actual calculation
+              _statBox("COMPLETION RATE", completionRate),
             ],
           ),
         );
       },
     );
+  }
+
+  // This method will calculate the completion rate for the past week
+  Future<Map<String, dynamic>> _getWeeklyCompletion(String userId) async {
+    try {
+      // Fetch all habits
+      QuerySnapshot habitSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('habits')
+          .get();
+
+      // Calculate the total number of habit entries (days * number of habits)
+      int totalHabits =
+          habitSnapshot.docs.length * 7; // Assuming 7 days in a week
+      int completedHabits = 0;
+
+      // Get today's date and the date 7 days ago
+      DateTime today = DateTime.now();
+      DateTime oneWeekAgo = today.subtract(Duration(days: 7));
+
+      // Aggregate the completion status for each habit in the past week
+      for (var habit in habitSnapshot.docs) {
+        Map<String, dynamic> completionStatus = habit['completionStatus'] ?? {};
+
+        completionStatus.forEach((date, status) {
+          DateTime habitDate = DateTime.parse(date);
+          if (habitDate.isAfter(oneWeekAgo) &&
+              habitDate.isBefore(today.add(Duration(days: 1)))) {
+            if (status == true) {
+              completedHabits++;
+            }
+          }
+        });
+      }
+
+      return {
+        'streak': await streakCalculator
+            .calculateStreak(userId), // Get current streak
+        'completed': completedHabits, // Completed habits in the past week
+        'total': totalHabits, // Total habits in the past week
+      };
+    } catch (e) {
+      print("Error fetching weekly completion: $e");
+      return {'streak': 0, 'completed': 0, 'total': 0};
+    }
   }
 
   Widget _statBox(String title, String value) {
