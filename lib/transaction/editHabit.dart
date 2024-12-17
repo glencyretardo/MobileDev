@@ -25,8 +25,8 @@ class _EditHabitPageState extends State<EditHabitPage> {
   void initState() {
     super.initState();
     _habitNameController =
-        TextEditingController(text: widget.habit['habitName']);
-    _noteController = TextEditingController(text: widget.habit['note']);
+        TextEditingController(text: widget.habit['habitName'] ?? '');
+    _noteController = TextEditingController(text: widget.habit['note'] ?? '');
     _selectedColor = Color(widget.habit['color'] ?? Colors.red.value);
     _selectedTime = widget.habit['time'] ?? 'Anytime';
     _selectedDays = List<String>.from(widget.habit['days'] ?? []);
@@ -93,190 +93,191 @@ class _EditHabitPageState extends State<EditHabitPage> {
       appBar: AppBar(
         title: Text('Edit Habit'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              // Habit Name Field
-              TextFormField(
-                controller: _habitNameController,
-                decoration: InputDecoration(labelText: 'Habit Name'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a habit name';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Habit Name Field
+                TextFormField(
+                  controller: _habitNameController,
+                  decoration: InputDecoration(
+                    labelText: 'Habit Name',
+                    labelStyle:
+                        TextStyle(color: Color(0xFFEEAA3C)), // Label text color
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a habit name';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 16),
 
-              // Color Panel
-              GestureDetector(
-                onTap: _openColorPicker,
-                child: Container(
+                // Color Panel
+                GestureDetector(
+                  onTap: _openColorPicker,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Color",
+                          style:
+                              TextStyle(fontSize: 16, color: Colors.grey[700]),
+                        ),
+                        Row(
+                          children: [
+                            Container(
+                              width: 16,
+                              height: 16,
+                              decoration: BoxDecoration(
+                                color: _selectedColor,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Icon(Icons.arrow_forward_ios,
+                                size: 16, color: Colors.grey),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16),
+
+                // DO IT AT Title
+                Text(
+                  "DO IT AT",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFEEAA3C),
+                  ),
+                ),
+                SizedBox(height: 8),
+
+                // DO IT AT Panel with Dropdown
+                Container(
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Color",
-                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      isExpanded: true,
+                      isDense: true,
+                      value: _selectedTime,
+                      icon: Icon(Icons.arrow_drop_down, color: Colors.black),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedTime = newValue!;
+                        });
+                      },
+                      style: TextStyle(
+                        color: Colors.grey[700],
+                        fontSize: 16,
                       ),
-                      Row(
-                        children: [
-                          Container(
-                            width: 16,
-                            height: 16,
-                            decoration: BoxDecoration(
-                              color: _selectedColor,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          Icon(Icons.arrow_forward_ios,
-                              size: 16, color: Colors.grey),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 16),
-
-              // DO IT AT Title
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "DO IT AT",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFEEAA3C), // Yellow-orange color
+                      items: <String>[
+                        "Anytime",
+                        "Morning",
+                        "Afternoon",
+                        "Evening"
+                      ].map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(Icons.more_vert, color: Colors.black),
-                    onPressed:
-                        () {}, // Placeholder for additional functionality
-                  ),
-                ],
-              ),
-              SizedBox(height: 8),
-
-              // DO IT AT Panel with Dropdown
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
                 ),
-                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    isExpanded: true,
-                    value: _selectedTime,
-                    icon: Icon(Icons.arrow_drop_down, color: Colors.black),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedTime = newValue!;
-                      });
-                    },
-                    style: TextStyle(
-                      color: Colors.grey[700],
-                      fontSize: 16,
-                    ),
-                    items: <String>[
-                      "Anytime",
-                      "Morning",
-                      "Afternoon",
-                      "Evening"
-                    ].map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
+                SizedBox(height: 16),
+
+                // REPEAT Title
+                Text(
+                  "REPEAT",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFEEAA3C),
                   ),
                 ),
-              ),
-              SizedBox(height: 16),
+                SizedBox(height: 8),
 
-              // REPEAT Title
-              Text(
-                "REPEAT",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFEEAA3C), // Yellow-orange color
+                // Days Picker (Repeat Days)
+                Wrap(
+                  spacing: 8.0,
+                  children: ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa']
+                      .map((day) => ChoiceChip(
+                            label: Text(day),
+                            selected: _selectedDays.contains(day),
+                            onSelected: (selected) {
+                              setState(() {
+                                if (selected) {
+                                  _selectedDays = [..._selectedDays, day];
+                                } else {
+                                  _selectedDays = _selectedDays
+                                      .where((d) => d != day)
+                                      .toList();
+                                }
+                              });
+                            },
+                          ))
+                      .toList(),
                 ),
-              ),
-              SizedBox(height: 8),
+                SizedBox(height: 16),
 
-              // Repeat Days
-              Text('Repeat Days'),
-              Wrap(
-                spacing: 8.0,
-                children: ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa']
-                    .map((day) => ChoiceChip(
-                          label: Text(day),
-                          selected: _selectedDays.contains(day),
-                          onSelected: (selected) {
-                            setState(() {
-                              if (selected) {
-                                _selectedDays.add(day);
-                              } else {
-                                _selectedDays.remove(day);
-                              }
-                            });
-                          },
-                        ))
-                    .toList(),
-              ),
-              SizedBox(height: 16),
-              // NOTE Title
-              Text(
-                "NOTE",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFEEAA3C), // Yellow-orange color
+                // NOTE Title
+                Text(
+                  "NOTE",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFEEAA3C),
+                  ),
                 ),
-              ),
-              SizedBox(height: 8),
+                SizedBox(height: 8),
 
-              // Note Field inside a box
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey),
+                // Note Field inside a box
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: TextField(
+                    controller: _noteController,
+                    decoration: InputDecoration(border: InputBorder.none),
+                    style: TextStyle(fontSize: 16),
+                    maxLines: null,
+                  ),
                 ),
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: TextField(
-                  controller: _noteController,
-                  decoration: InputDecoration(border: InputBorder.none),
-                  style: TextStyle(fontSize: 16),
-                  maxLines: null,
-                ),
-              ),
-              SizedBox(height: 30),
+                SizedBox(height: 30),
 
-              // Save Button
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState?.validate() ?? false) {
-                    _saveEdits();
-                  }
-                },
-                child: Text('Save Changes'),
-              ),
-            ],
+                // Save Button
+                ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState?.validate() ?? false) {
+                      _saveEdits();
+                    }
+                  },
+                  child: Text('Save Changes'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
