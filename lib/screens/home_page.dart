@@ -57,8 +57,6 @@ class _HomePageState extends State<HomePage> {
               Text('Repetition: ${habit['days'] ?? 'Not Set'}'),
               Text('Time: ${habit['time'] ?? 'Not Set'}'),
               Text('Notes: ${habit['note'] ?? 'No notes'}'),
-              Text(
-                  'Status: ${habit['isCompleted'] ? 'Completed' : 'Not Completed'}'),
             ],
           ),
           actions: [
@@ -198,20 +196,17 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
+          // Calendar Widget
           HorizontalCalendar(
             initialDate: selectedDate,
             onDateSelected: (date) {
               setState(() {
-                selectedDate = date; // Update selected date
+                selectedDate = date;
               });
             },
           ),
           Padding(
-            padding: const EdgeInsets.only(
-              left: 16.0,
-              top: 32.0,
-              bottom: 32.0,
-            ),
+            padding: const EdgeInsets.only(left: 16.0, top: 32.0, bottom: 32.0),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Container(
@@ -228,10 +223,7 @@ class _HomePageState extends State<HomePage> {
                       value: selectedFilter,
                       isExpanded: true,
                       dropdownColor: Colors.grey[200],
-                      icon: Icon(
-                        Icons.arrow_drop_down,
-                        color: Colors.black,
-                      ),
+                      icon: Icon(Icons.arrow_drop_down, color: Colors.black),
                       items: [
                         DropdownMenuItem(
                           value: "ALL",
@@ -301,7 +293,7 @@ class _HomePageState extends State<HomePage> {
                 }
 
                 final dayInitials = ["S", "M", "T", "W", "Th", "F", "Sa"];
-                final selectedDayIndex = selectedDate.weekday % 7; // Sunday = 0
+                final selectedDayIndex = selectedDate.weekday % 7;
                 final selectedDayInitial = dayInitials[selectedDayIndex];
 
                 final habits = snapshot.data!.docs;
@@ -313,17 +305,13 @@ class _HomePageState extends State<HomePage> {
                   return false;
                 }).toList();
 
-// Sort habits: incomplete first, completed last
-                filteredHabits.sort((a, b) {
-                  final aCompleted = a['isCompleted'] ?? false;
-                  final bCompleted = b['isCompleted'] ?? false;
-                  return aCompleted == bCompleted ? 0 : (aCompleted ? 1 : -1);
-                });
-
                 if (filteredHabits.isEmpty) {
                   return Center(
                       child: Text("No habits for the selected date."));
                 }
+
+                final selectedDateString =
+                    DateFormat('yyyy-MM-dd').format(selectedDate);
 
                 return ListView.builder(
                   itemCount: filteredHabits.length,
@@ -331,11 +319,17 @@ class _HomePageState extends State<HomePage> {
                     final habit = filteredHabits[index];
                     final habitName = habit['habitName'];
                     int colorValue = habit['color'];
-                    bool isCompleted = habit['isCompleted'] ?? false;
+                    Map<String, dynamic> completionStatus =
+                        habit['completionStatus'] ?? {};
+
+                    // Determine completion for the selected date
+                    bool isCompleted =
+                        completionStatus[selectedDateString] ?? false;
+
+                    // Determine if the selected date is in the future
+                    bool isFutureDate = selectedDate.isAfter(DateTime.now());
                     Color habitColor =
                         isCompleted ? Colors.grey[200]! : Color(colorValue);
-
-                    bool isFutureDate = selectedDate.isAfter(DateTime.now());
 
                     return GestureDetector(
                       onTap: () => _showHabitDetails(context, habit),
@@ -354,14 +348,17 @@ class _HomePageState extends State<HomePage> {
                               if (!isFutureDate)
                                 Checkbox(
                                   value: isCompleted,
-                                  onChanged: (value) {
-                                    FirebaseFirestore.instance
+                                  onChanged: (value) async {
+                                    completionStatus[selectedDateString] =
+                                        value;
+                                    await FirebaseFirestore.instance
                                         .collection('users')
                                         .doc(widget.userId)
                                         .collection('habits')
                                         .doc(habit.id)
-                                        .update({'isCompleted': value});
-
+                                        .update({
+                                      'completionStatus': completionStatus
+                                    });
                                     setState(() {});
                                   },
                                 ),

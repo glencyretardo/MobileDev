@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:habify_3/screens/home_page.dart';
 import 'package:habify_3/screens/dashboard.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore package for data storage
 import 'package:firebase_auth/firebase_auth.dart'; // Firebase authentication
@@ -126,6 +125,14 @@ class _AddHabitPageState extends State<AddHabitPage> {
         User? user = FirebaseAuth.instance.currentUser;
 
         if (user != null) {
+          // Generate completionStatus for the next 30 days
+          Map<String, bool> completionStatus = {};
+          DateTime today = DateTime.now();
+          for (int i = 0; i < 30; i++) {
+            String date =
+                today.add(Duration(days: i)).toIso8601String().split('T')[0];
+            completionStatus[date] = false;
+          }
           // Save the habit under the logged-in user's UID
           await FirebaseFirestore.instance
               .collection('users')
@@ -137,8 +144,7 @@ class _AddHabitPageState extends State<AddHabitPage> {
             'time': selectedTime,
             'days': selectedDays, // Storing the selected days
             'note': note,
-            'isCompleted':
-                false, // New field added with a default value of false
+            'completionStatus': completionStatus, // Add the map here
             'createdAt': FieldValue.serverTimestamp(),
           });
 
@@ -185,7 +191,7 @@ class _AddHabitPageState extends State<AddHabitPage> {
       ),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
-        //  //bg color
+        // Correctly wrap the body content here
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -197,10 +203,9 @@ class _AddHabitPageState extends State<AddHabitPage> {
                 child: TextField(
                   controller: habitNameController,
                   decoration: InputDecoration(
-                    hintText:
-                        "Habit Name", // Placeholder text that disappears when typing
+                    hintText: "Habit Name",
                     hintStyle: TextStyle(
-                      color: Colors.grey, // Placeholder color
+                      color: Colors.grey,
                       fontSize: 25,
                       fontWeight: FontWeight.bold,
                     ),
@@ -221,7 +226,7 @@ class _AddHabitPageState extends State<AddHabitPage> {
                 onTap: _openColorPicker,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.grey[200], // Light green background
+                    color: Colors.grey[200],
                     borderRadius: BorderRadius.circular(8),
                   ),
                   padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -261,13 +266,12 @@ class _AddHabitPageState extends State<AddHabitPage> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFFEEAA3C), // Yellow-orange color
+                      color: Color(0xFFEEAA3C),
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.more_vert,
-                        color: Colors.black), // Three dots icon
-                    onPressed: () {}, // Action when clicked (can be updated)
+                    icon: Icon(Icons.more_vert, color: Colors.black),
+                    onPressed: () {},
                   ),
                 ],
               ),
@@ -275,13 +279,13 @@ class _AddHabitPageState extends State<AddHabitPage> {
               // DO IT AT Panel with Dropdown
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.grey[200], // Light green background
+                  color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(8),
                 ),
                 padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
-                    isExpanded: true, // Expands dropdown to fill the container
+                    isExpanded: true,
                     value: selectedTime,
                     icon: Icon(Icons.arrow_drop_down, color: Colors.black),
                     onChanged: (String? newValue) {
@@ -290,9 +294,8 @@ class _AddHabitPageState extends State<AddHabitPage> {
                       });
                     },
                     style: TextStyle(
-                      color: Colors
-                          .grey[700], // Sets the font color of dropdown items
-                      fontSize: 16, // Sets the font size of dropdown items
+                      color: Colors.grey[700],
+                      fontSize: 16,
                     ),
                     items: <String>[
                       "Anytime",
@@ -315,7 +318,7 @@ class _AddHabitPageState extends State<AddHabitPage> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFEEAA3C), // Yellow-orange color
+                  color: Color(0xFFEEAA3C),
                 ),
               ),
               SizedBox(height: 8),
@@ -324,7 +327,7 @@ class _AddHabitPageState extends State<AddHabitPage> {
                 onTap: _openDaysSelectionDialog,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.grey[200], // Light green background
+                    color: Colors.grey[200],
                     borderRadius: BorderRadius.circular(8),
                   ),
                   padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -343,60 +346,53 @@ class _AddHabitPageState extends State<AddHabitPage> {
               ),
               SizedBox(height: 20),
               // Note Field
-              // Note Label above the TextField
               Text(
                 "NOTE",
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFEEAA3C), // Yellow-orange color
+                  color: Color(0xFFEEAA3C),
                 ),
               ),
               SizedBox(height: 8),
-// Note Field inside a box
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.grey[200], // Light background color for the box
+                  color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: Colors.grey, // Optional border for emphasis
+                    color: Colors.grey,
                   ),
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: TextField(
                   controller: noteController,
                   decoration: InputDecoration(
-                    border: InputBorder
-                        .none, // Removes the default underline border
+                    border: InputBorder.none,
                   ),
                   style: TextStyle(fontSize: 16),
                   onChanged: (text) {
-                    setState(() {}); // Triggers UI update when text changes
+                    setState(() {});
                   },
                 ),
               ),
               SizedBox(height: 30),
               // Save Button
-              // Save Button
               Center(
-                child: Flexible(
-                  child: ElevatedButton(
-                    onPressed: _saveHabit,
-                    style: ElevatedButton.styleFrom(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                      backgroundColor: Color(0xFFEEAA3C),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                child: ElevatedButton(
+                  onPressed: _saveHabit,
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                    backgroundColor: Color(0xFFEEAA3C),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text(
-                      "Save Habit",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                  ),
+                  child: Text(
+                    "Save Habit",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                 ),
