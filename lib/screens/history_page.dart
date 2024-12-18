@@ -41,19 +41,23 @@ class _HistoryPageState extends State<HistoryPage> {
 
           const SizedBox(height: 16),
 
-          // Improved Stat Boxes
-          _buildStatRow(),
+          // Conditionally show the Stat Row and Calendar only for Achievements tab
+          if (selectedTabIndex == 0) ...[
+            _buildStatRow(),
+            const SizedBox(height: 16),
+            _buildCalendarHeader(),
+            const SizedBox(height: 8),
+          ],
 
-          const SizedBox(height: 16),
-
-          // Calendar Header
-          _buildCalendarHeader(),
-
-          const SizedBox(height: 8),
-
-          // Calendar Grid
+          // Main content area
           Expanded(
-            child: CalendarGrid(),
+            child: selectedTabIndex == 1
+                ? _buildAllHabitsWidget()
+                : Column(
+                    children: [
+                      Expanded(child: CalendarGrid()),
+                    ],
+                  ),
           ),
         ],
       ),
@@ -111,6 +115,73 @@ class _HistoryPageState extends State<HistoryPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildAllHabitsWidget() {
+    return FutureBuilder<QuerySnapshot>(
+      future: FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.userId)
+          .collection('habits')
+          .get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(
+            child: Text(
+              "No habits found.",
+              style: TextStyle(fontSize: 18, color: Colors.black54),
+            ),
+          );
+        }
+
+        final habits = snapshot.data!.docs;
+
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 2.5,
+            ),
+            itemCount: habits.length,
+            itemBuilder: (context, index) {
+              final habitName = habits[index]['habitName'] ?? 'Unnamed Habit';
+
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    habitName,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
