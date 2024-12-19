@@ -16,7 +16,6 @@ class _AddHabitPageState extends State<AddHabitPage> {
   final TextEditingController noteController = TextEditingController();
   List<String> selectedDays = []; // Store the selected days for Repeat
 
-  // Days of the week to display in the popup (with initials)
   final List<String> allDays = ["M", "T", "W", "Th", "F", "Sa", "S"];
 
   @override
@@ -24,7 +23,6 @@ class _AddHabitPageState extends State<AddHabitPage> {
     super.initState();
   }
 
-  // Function to open the popup dialog for selecting days
   void _openDaysSelectionDialog() {
     showDialog(
       context: context,
@@ -75,7 +73,6 @@ class _AddHabitPageState extends State<AddHabitPage> {
     );
   }
 
-  // Display the selected days or "Everyday" if all days are selected
   String _getRepeatText() {
     if (selectedDays.length == 7) {
       return "Everyday";
@@ -121,11 +118,9 @@ class _AddHabitPageState extends State<AddHabitPage> {
 
     if (habitName.isNotEmpty && selectedDays.isNotEmpty) {
       try {
-        // Get the current logged-in user
         User? user = FirebaseAuth.instance.currentUser;
 
         if (user != null) {
-          // Generate completionStatus for the next 30 days
           Map<String, bool> completionStatus = {};
           DateTime today = DateTime.now();
           for (int i = 0; i < 30; i++) {
@@ -133,42 +128,36 @@ class _AddHabitPageState extends State<AddHabitPage> {
                 today.add(Duration(days: i)).toIso8601String().split('T')[0];
             completionStatus[date] = false;
           }
-          // Save the habit under the logged-in user's UID
           await FirebaseFirestore.instance
               .collection('users')
-              .doc(user.uid) // Use the logged-in user's UID
+              .doc(user.uid)
               .collection('habits')
               .add({
             'habitName': habitName,
-            'color': selectedColor.value, // Storing color as integer value
+            'color': selectedColor.value,
             'time': selectedTime,
-            'days': selectedDays, // Storing the selected days
+            'days': selectedDays,
             'note': note,
-            'completionStatus': completionStatus, // Add the map here
+            'completionStatus': completionStatus,
             'createdAt': FieldValue.serverTimestamp(),
           });
 
-          // After saving, navigate to HomePage and pass the userId
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  DashboardPage(userId: user.uid), // Pass the userId here
+              builder: (context) => DashboardPage(userId: user.uid),
             ),
           );
         } else {
-          // If user is not logged in, show an error
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('User not logged in! Please log in first.'),
             backgroundColor: Colors.red,
           ));
         }
       } catch (e) {
-        // Handle errors here
         print("Error saving habit: $e");
       }
     } else {
-      // If fields are incomplete, show an error message
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Please fill all fields and select habit days'),
         backgroundColor: Colors.red,
@@ -191,43 +180,40 @@ class _AddHabitPageState extends State<AddHabitPage> {
       ),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
-        // Correctly wrap the body content here
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Habit Name Field
-              Container(
-                width: 250,
-                child: TextField(
-                  controller: habitNameController,
-                  decoration: InputDecoration(
-                    hintText: "Habit Name",
-                    hintStyle: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    suffixIcon: Icon(Icons.edit, color: Colors.black),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue),
-                    ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
+              TextField(
+                controller: habitNameController,
+                decoration: InputDecoration(
+                  hintText: "Habit Name",
+                  hintStyle: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
                   ),
-                  style: TextStyle(fontSize: 18),
+                  suffixIcon: Icon(Icons.edit, color: Colors.black),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: selectedColor),
+                  ),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey),
+                  ),
                 ),
+                style: TextStyle(fontSize: 18),
               ),
-              SizedBox(height: 20),
-              // COLOR Panel
+              SizedBox(height: 16),
+
+              // Color Panel
               GestureDetector(
                 onTap: _openColorPicker,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(8),
+                    color: Color(0xFFB0D8D3),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   child: Row(
@@ -235,13 +221,14 @@ class _AddHabitPageState extends State<AddHabitPage> {
                     children: [
                       Text(
                         "Color",
-                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                        style:
+                            TextStyle(fontSize: 16, color: Color(0xFF02243F)),
                       ),
                       Row(
                         children: [
                           Container(
-                            width: 16,
-                            height: 16,
+                            width: 20,
+                            height: 20,
                             decoration: BoxDecoration(
                               color: selectedColor,
                               shape: BoxShape.circle,
@@ -249,40 +236,33 @@ class _AddHabitPageState extends State<AddHabitPage> {
                           ),
                           SizedBox(width: 8),
                           Icon(Icons.arrow_forward_ios,
-                              size: 16, color: Colors.grey),
+                              size: 18, color: Colors.grey),
                         ],
                       ),
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 16),
+
               // DO IT AT Title
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "DO IT AT",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFEEAA3C),
-                    ),
-                  ),
-                  // IconButton(
-                  //   icon: Icon(Icons.more_vert, color: Colors.black),
-                  //   onPressed: () {},
-                  // ),
-                ],
+              Text(
+                "DO IT AT",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFEEAA3C),
+                ),
               ),
               SizedBox(height: 8),
+
               // DO IT AT Panel with Dropdown
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
+                  color: Color(0xFFB0D8D3),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     isExpanded: true,
@@ -293,10 +273,7 @@ class _AddHabitPageState extends State<AddHabitPage> {
                         selectedTime = newValue!;
                       });
                     },
-                    style: TextStyle(
-                      color: Colors.grey[700],
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(color: Color(0xFF02243F), fontSize: 16),
                     items: <String>[
                       "Anytime",
                       "Morning",
@@ -311,24 +288,26 @@ class _AddHabitPageState extends State<AddHabitPage> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
-              // REPEAT Title
+              SizedBox(height: 16),
+
+              // Repeat Title
               Text(
                 "REPEAT",
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFFEEAA3C),
                 ),
               ),
               SizedBox(height: 8),
-              // REPEAT Panel with updated text based on selection
+
+              // Repeat Panel
               GestureDetector(
                 onTap: _openDaysSelectionDialog,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(8),
+                    color: Color(0xFFB0D8D3),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   child: Row(
@@ -336,20 +315,22 @@ class _AddHabitPageState extends State<AddHabitPage> {
                     children: [
                       Text(
                         _getRepeatText(),
-                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                        style:
+                            TextStyle(fontSize: 16, color: Color(0xFF02243F)),
                       ),
                       Icon(Icons.arrow_forward_ios,
-                          size: 16, color: Colors.grey),
+                          size: 18, color: Color(0xFF02243F)),
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 16),
+
               // Note Field
               Text(
                 "NOTE",
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFFEEAA3C),
                 ),
@@ -357,18 +338,13 @@ class _AddHabitPageState extends State<AddHabitPage> {
               SizedBox(height: 8),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.grey,
-                  ),
+                  color: Color(0xFFB0D8D3),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: TextField(
                   controller: noteController,
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                  ),
+                  decoration: InputDecoration(border: InputBorder.none),
                   style: TextStyle(fontSize: 16),
                   onChanged: (text) {
                     setState(() {});
@@ -376,6 +352,7 @@ class _AddHabitPageState extends State<AddHabitPage> {
                 ),
               ),
               SizedBox(height: 30),
+
               // Save Button
               Center(
                 child: ElevatedButton(
@@ -384,7 +361,7 @@ class _AddHabitPageState extends State<AddHabitPage> {
                     padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
                     backgroundColor: Color(0xFFEEAA3C),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: Text(

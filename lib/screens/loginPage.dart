@@ -91,11 +91,15 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 150),
-                  Image.asset(
-                    'assets/habify_logo.png',
-                    height: 200,
-                    width: 300,
+                  const SizedBox(height: 50),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        right: 20.0), // Apply left padding to the logo
+                    child: Image.asset(
+                      'assets/habify_logo.png',
+                      height: 300,
+                      width: 500,
+                    ),
                   ),
                   const SizedBox(height: 40),
                   // const Text(
@@ -159,11 +163,16 @@ class _LoginPageState extends State<LoginPage> {
                       return null;
                     },
                   ),
+
                   const SizedBox(height: 10),
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () {},
+                      style: TextButton.styleFrom(
+                        foregroundColor: Color.fromARGB(255, 31, 77,
+                            77), // Text color same as button background
+                      ),
                       child: const Text('Forgot Password?'),
                     ),
                   ),
@@ -173,10 +182,27 @@ class _LoginPageState extends State<LoginPage> {
                       : ElevatedButton(
                           onPressed: _login,
                           style: ElevatedButton.styleFrom(
-                            minimumSize: const Size(double.infinity, 50),
+                            minimumSize: const Size(
+                                double.infinity, 50), // Button width and height
+                            backgroundColor:
+                                Color(0xFFA0CBCB), // Background color
+                            foregroundColor: Colors.white, // Text color
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(15), // Rounded corners
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12), // Vertical padding
                           ),
-                          child: const Text('Log In'),
+                          child: const Text(
+                            'Log In',
+                            style: TextStyle(
+                              fontSize: 18, // Font size
+                              fontWeight: FontWeight.bold, // Font weight
+                            ),
+                          ),
                         ),
+
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -190,6 +216,10 @@ class _LoginPageState extends State<LoginPage> {
                                 builder: (context) => SignupPage()),
                           );
                         },
+                        style: TextButton.styleFrom(
+                          foregroundColor: Color.fromARGB(255, 31, 77,
+                              77), // Text color same as button background
+                        ),
                         child: const Text('Sign Up'),
                       ),
                     ],

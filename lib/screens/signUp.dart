@@ -120,11 +120,11 @@ class _SignupPageState extends State<SignupPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 30),
+              const SizedBox(height: 0),
               Image.asset(
                 'assets/habify_logo.png',
-                height: 120,
-                width: 120,
+                height: 150,
+                width: 500,
               ),
               const SizedBox(height: 20),
               const Text(
@@ -289,6 +289,8 @@ class _SignupPageState extends State<SignupPage> {
                 onPressed: _signUp,
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
+                  backgroundColor: Color(0xFFA0CBCB), // Background color
+                  foregroundColor: Colors.white, // Text color
                 ),
                 child: const Text('Sign Up'),
               ),
