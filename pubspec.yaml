@@ -44,6 +44,8 @@ dependencies:
   provider: ^6.0.5
   cloud_firestore: ^5.5.1 # naay uban dependency dili compatible ani huhu
   fluttertoast: ^8.0.9
+  shared_preferences: ^2.1.0
+  path_provider: ^2.0.10
 
 
 dev_dependencies:
@@ -76,6 +78,11 @@ flutter:
     - assets/splash_dark_logo.png
     - assets/default_profile.jpg
     - assets/habify_logo.png
+    - assets/icons/icon1.png
+    - assets/icons/icon2.png
+    - assets/icons/icon3.png
+    - assets/icons/icon4.png
+    - assets/icons/icon5.png
   
 
   # An image asset can refer to one or more resolution-specific "variants", see

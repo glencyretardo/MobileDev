@@ -12,8 +12,40 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
-  int selectedTabIndex = 0; // Track selected tab index
+  int selectedTabIndex = 0;
   final streakCalculator = StreakCalculator();
+
+  // Declare variables to cache the data
+  Map<String, dynamic>? _weeklyCompletionData;
+  Future<QuerySnapshot>? _habitData;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load habit data only once
+    _habitData = FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.userId)
+        .collection('habits')
+        .get();
+
+    // Load weekly completion data only if it's not already cached
+    if (_weeklyCompletionData == null) {
+      _loadWeeklyCompletionData();
+    }
+  }
+
+  // Load weekly completion data and cache it
+  Future<void> _loadWeeklyCompletionData() async {
+    try {
+      final data = await _getWeeklyCompletion(widget.userId);
+      setState(() {
+        _weeklyCompletionData = data;
+      });
+    } catch (e) {
+      print("Error loading weekly completion data: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,10 +67,7 @@ class _HistoryPageState extends State<HistoryPage> {
       body: Column(
         children: [
           const SizedBox(height: 8),
-
-          // Enhanced Navigation Tabs
           _buildTabBar(),
-
           const SizedBox(height: 16),
 
           // Conditionally show the Stat Row and Calendar only for Achievements tab
@@ -120,11 +149,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
   Widget _buildAllHabitsWidget() {
     return FutureBuilder<QuerySnapshot>(
-      future: FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.userId)
-          .collection('habits')
-          .get(),
+      future: _habitData,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -143,21 +168,18 @@ class _HistoryPageState extends State<HistoryPage> {
 
         return Padding(
           padding: const EdgeInsets.all(16.0),
-          child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 2.5,
-            ),
+          child: ListView.builder(
             itemCount: habits.length,
             itemBuilder: (context, index) {
               final habitName = habits[index]['habitName'] ?? 'Unnamed Habit';
 
               return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black12,
@@ -166,15 +188,13 @@ class _HistoryPageState extends State<HistoryPage> {
                     ),
                   ],
                 ),
-                child: Center(
-                  child: Text(
-                    habitName,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+                child: Text(
+                  habitName,
+                  textAlign: TextAlign.left,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
                   ),
                 ),
               );
@@ -186,62 +206,47 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   Widget _buildStatRow() {
-    return FutureBuilder<Map<String, dynamic>>(
-      future: _getWeeklyCompletion(widget.userId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Padding(
+    return _weeklyCompletionData == null
+        ? Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _statBox("CURRENT STREAK", "0"),
-                _statBox("COMPLETION RATE", "0/0"),
+                _statBox("CURRENT STREAK", "Loading..."),
+                _statBox("COMPLETION RATE", "Loading..."),
+              ],
+            ),
+          )
+        : Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                    child: _statBox("CURRENT STREAK",
+                        "${_weeklyCompletionData?['streak']}")),
+                Expanded(
+                    child: _statBox("COMPLETION RATE",
+                        "${_weeklyCompletionData?['completed']}/${_weeklyCompletionData?['total']}")),
               ],
             ),
           );
-        }
-
-        String streakValue =
-            snapshot.hasData ? "${snapshot.data?['streak']}" : "0";
-        String completionRate = snapshot.hasData
-            ? "${snapshot.data?['completed']}/${snapshot.data?['total']}"
-            : "0/0";
-
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _statBox("CURRENT STREAK", streakValue),
-              _statBox("COMPLETION RATE", completionRate),
-            ],
-          ),
-        );
-      },
-    );
   }
 
-  // This method will calculate the completion rate for the past week
   Future<Map<String, dynamic>> _getWeeklyCompletion(String userId) async {
     try {
-      // Fetch all habits
       QuerySnapshot habitSnapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
           .collection('habits')
           .get();
 
-      // Calculate the total number of habit entries (days * number of habits)
-      int totalHabits =
-          habitSnapshot.docs.length * 7; // Assuming 7 days in a week
+      int totalHabits = habitSnapshot.docs.length * 7;
       int completedHabits = 0;
 
-      // Get today's date and the date 7 days ago
       DateTime today = DateTime.now();
       DateTime oneWeekAgo = today.subtract(Duration(days: 7));
 
-      // Aggregate the completion status for each habit in the past week
       for (var habit in habitSnapshot.docs) {
         Map<String, dynamic> completionStatus = habit['completionStatus'] ?? {};
 
@@ -257,10 +262,9 @@ class _HistoryPageState extends State<HistoryPage> {
       }
 
       return {
-        'streak': await streakCalculator
-            .calculateStreak(userId), // Get current streak
-        'completed': completedHabits, // Completed habits in the past week
-        'total': totalHabits, // Total habits in the past week
+        'streak': await streakCalculator.calculateStreak(userId),
+        'completed': completedHabits,
+        'total': totalHabits,
       };
     } catch (e) {
       print("Error fetching weekly completion: $e");
@@ -288,6 +292,7 @@ class _HistoryPageState extends State<HistoryPage> {
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
@@ -296,6 +301,8 @@ class _HistoryPageState extends State<HistoryPage> {
               fontWeight: FontWeight.bold,
               color: Colors.grey[700],
             ),
+            overflow: TextOverflow.ellipsis,
+            softWrap: true,
           ),
           const SizedBox(height: 8),
           Text(
@@ -305,6 +312,8 @@ class _HistoryPageState extends State<HistoryPage> {
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
+            overflow: TextOverflow.ellipsis,
+            softWrap: true,
           ),
         ],
       ),

@@ -269,10 +269,10 @@ class _AddHabitPageState extends State<AddHabitPage> {
                       color: Color(0xFFEEAA3C),
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(Icons.more_vert, color: Colors.black),
-                    onPressed: () {},
-                  ),
+                  // IconButton(
+                  //   icon: Icon(Icons.more_vert, color: Colors.black),
+                  //   onPressed: () {},
+                  // ),
                 ],
               ),
               SizedBox(height: 8),

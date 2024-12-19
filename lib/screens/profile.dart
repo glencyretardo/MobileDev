@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 import 'package:provider/provider.dart'; // Import Provider
 import 'custom_bottom_navigation_bar.dart';
 import 'history_page.dart';
@@ -19,26 +18,43 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  File? _profileImage;
+  String? _profileImageUrl; // To store the profile image URL from Firestore
+  String _username = ''; // To store the username from Firestore
+  String _email = ''; // To store the email from Firestore
+  bool _isLoading = true; // To track loading state
 
-  // Method to pick an image from the gallery
-  Future<void> _pickImage() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
+  // Fetch user data (username, email, and profile image) from Firestore
+  void _getUserData() async {
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.userId)
+          .get();
+
       setState(() {
-        _profileImage = File(pickedFile.path);
+        _username = userDoc['username'] ?? 'Username';
+        _email = userDoc['email'] ?? 'user@example.com';
+        _profileImageUrl =
+            userDoc['profileImage']; // Assuming profileImage is a URL
+        _isLoading = false; // Data has been fetched, stop loading
+      });
+    } catch (e) {
+      print('Error fetching user data: $e');
+      setState(() {
+        _isLoading = false; // Stop loading if there is an error
       });
     }
   }
 
   @override
+  void initState() {
+    super.initState();
+    _getUserData(); // Fetch user data when the page is initialized
+  }
+
+  @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-
-    // Fetch the current user's information (this could be a placeholder for now)
-    final String username = authProvider.currentUser?.displayName ?? 'Username';
-    final String email = authProvider.currentUser?.email ?? 'user@example.com';
 
     return Scaffold(
       appBar: AppBar(
@@ -56,23 +72,37 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             Row(
               children: [
-                GestureDetector(
-                  onTap: _pickImage,
-                  child: CircleAvatar(
-                    radius: 50,
-                    backgroundImage: _profileImage != null
-                        ? FileImage(_profileImage!)
-                        : AssetImage('assets/default_profile.jpg')
-                            as ImageProvider,
-                    child: _profileImage == null
-                        ? Icon(Icons.add_a_photo, size: 30, color: Colors.grey)
-                        : null,
-                  ),
-                ),
+                // If still loading, show a progress indicator
+                _isLoading
+                    ? CircleAvatar(
+                        radius: 50,
+                        backgroundColor: Colors.grey.shade200,
+                        child: CircularProgressIndicator(),
+                      )
+                    : GestureDetector(
+                        onTap: () {
+                          // Optionally, add functionality to pick a new profile picture here.
+                        },
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundImage: _profileImageUrl != null
+                              ? (_profileImageUrl!.startsWith('assets/')
+                                  ? AssetImage(_profileImageUrl!)
+                                      as ImageProvider
+                                  : NetworkImage(_profileImageUrl!))
+                              : AssetImage('assets/icons/default_profile.png'),
+                          child: _profileImageUrl == null
+                              ? Icon(Icons.account_circle,
+                                  size: 50,
+                                  color: Colors.grey) // Placeholder icon
+                              : null,
+                        ),
+                      ),
+
                 SizedBox(width: 20),
                 Expanded(
                   child: Text(
-                    username, // Display the user's name here
+                    _username, // Display the username from Firestore
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                 ),

@@ -159,20 +159,9 @@ class _HomePageState extends State<HomePage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Today',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                    Text(
-                      DateFormat('MMMM d, yyyy').format(DateTime.now()),
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
+                    Image.asset(
+                      'assets/habify_logo.png',
+                      height: 100, // Adjust the size of the logo
                     ),
                   ],
                 ),
@@ -305,22 +294,41 @@ class _HomePageState extends State<HomePage> {
                   final days = habit['days'] ?? [];
                   final createdAt =
                       (habit['createdAt'] as Timestamp?)?.toDate();
+                  final habitTime = habit['time'] ??
+                      ''; // Time field (MORNING, AFTERNOON, EVENING, ANYTIME)
 
                   if (days is List) {
                     // Check if the habit's creation date is before or equal to the selected date
                     bool isCreatedBeforeOrOnSelectedDate = createdAt == null ||
                         createdAt.isBefore(selectedDate) ||
                         createdAt.isAtSameMomentAs(selectedDate);
+
                     // Filter by days and check if the habit is created before or on the selected date
+                    bool isSelectedDay = days.contains(selectedDayInitial);
+
+                    /// Apply time filter based on selectedFilter
+                    // Apply time filter based on selectedFilter
+                    String habitTime =
+                        habit['time'] ?? ''; // Ensure habitTime is never null
+
+// Now you can safely call toUpperCase()
+                    bool isTimeMatch = selectedFilter == "ALL" ||
+                        selectedFilter == "ANYTIME" ||
+                        habitTime.toUpperCase() ==
+                            (selectedFilter ?? "")
+                                .toUpperCase(); // Ensure selectedFilter is also non-null
+// No need for `?` here
+
                     return isCreatedBeforeOrOnSelectedDate &&
-                        days.contains(selectedDayInitial);
+                        isSelectedDay &&
+                        isTimeMatch;
                   }
                   return false;
                 }).toList();
 
                 if (filteredHabits.isEmpty) {
                   return Center(
-                      child: Text("No habits for the selected date."));
+                      child: Text("No habits for the selected filter."));
                 }
 
                 final selectedDateString =

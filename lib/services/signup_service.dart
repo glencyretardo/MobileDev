@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore package
 import 'package:flutter/material.dart';
 import 'package:habify_3/screens/loginPage.dart'; // Import LoginPage for redirection
 
@@ -20,10 +21,22 @@ class SignupService {
 
     try {
       // Create user with Firebase Auth
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+
+      // After user is created, add data to Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .set({
+        'username': username,
+        'email': email,
+        'birthday': birthday,
+        //'profileImage': '', // Set profileImage as empty initially
+      });
 
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(

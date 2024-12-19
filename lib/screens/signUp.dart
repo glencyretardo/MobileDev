@@ -40,20 +40,39 @@ class _SignupPageState extends State<SignupPage> {
 
         // Save additional user data to Firestore
         if (userId != null) {
+          final userDoc =
+              FirebaseFirestore.instance.collection('users').doc(userId);
+
           // Store user data in Firestore
-          await FirebaseFirestore.instance.collection('users').doc(userId).set({
+          await userDoc.set({
             'username': _usernameController.text,
             'email': _emailController.text,
             'birthday': _birthdayController.text,
             'created_at': FieldValue.serverTimestamp(), // Add a timestamp
+            'imageProfile': '', // Initial value for profile image
           });
+          // Save default time periods in Firestore
+          final timePeriods = {
+            'Morning': '07:00',
+            'Afternoon': '13:00',
+            'Evening': '18:00',
+            'End of the Day': '21:59',
+          };
+
+          for (final entry in timePeriods.entries) {
+            await userDoc.collection('time_period').doc(entry.key).set({
+              'name': entry.key,
+              'time': entry.value,
+            });
+          }
 
           // Debugging statement for Firestore storage success
           print(
-              'User data successfully stored in Firestore for user ID: $userId');
+              'User data and time periods successfully stored in Firestore for user ID: $userId');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-                content: Text('Account created successfully! Please log in.')),
+              content: Text('Account created successfully! Please log in.'),
+            ),
           );
 
           // Navigate to Login Page
