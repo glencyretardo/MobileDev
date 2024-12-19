@@ -205,6 +205,7 @@ class _HomePageState extends State<HomePage> {
                 selectedDate = date;
               });
             },
+            userId: widget.userId, // Pass userId here
           ),
           Padding(
             padding: const EdgeInsets.only(left: 16.0, top: 32.0, bottom: 32.0),
@@ -279,7 +280,9 @@ class _HomePageState extends State<HomePage> {
                   .collection('users')
                   .doc(widget.userId)
                   .collection('habits')
-                  .orderBy('createdAt', descending: false)
+                  .orderBy('createdAt',
+                      descending:
+                          false) // Ensure habits are ordered by creation date
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
@@ -300,8 +303,17 @@ class _HomePageState extends State<HomePage> {
                 final habits = snapshot.data!.docs;
                 final filteredHabits = habits.where((habit) {
                   final days = habit['days'] ?? [];
+                  final createdAt =
+                      (habit['createdAt'] as Timestamp?)?.toDate();
+
                   if (days is List) {
-                    return days.contains(selectedDayInitial);
+                    // Check if the habit's creation date is before or equal to the selected date
+                    bool isCreatedBeforeOrOnSelectedDate = createdAt == null ||
+                        createdAt.isBefore(selectedDate) ||
+                        createdAt.isAtSameMomentAs(selectedDate);
+                    // Filter by days and check if the habit is created before or on the selected date
+                    return isCreatedBeforeOrOnSelectedDate &&
+                        days.contains(selectedDayInitial);
                   }
                   return false;
                 }).toList();
@@ -395,7 +407,7 @@ class _HomePageState extends State<HomePage> {
                 );
               },
             ),
-          ),
+          )
         ],
       ),
     );
