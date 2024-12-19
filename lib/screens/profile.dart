@@ -6,6 +6,8 @@ import 'custom_bottom_navigation_bar.dart';
 import 'history_page.dart';
 import 'home_page.dart';
 import 'package:habify_3/providers/auth_provider.dart'; // Import AuthProvider
+import 'package:habify_3/transaction/time_period.dart'; // Import AuthProvider
+import 'package:habify_3/transaction/editProfilePage.dart'; // Import AuthProvider
 
 class ProfilePage extends StatefulWidget {
   final String userId; // Add userId as a parameter
@@ -78,11 +80,21 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             SizedBox(height: 30),
             _buildClickablePanel('Edit Profile', Icons.edit, () {
-              Navigator.pushNamed(context, '/edit-profile');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        EditProfilePage(userId: widget.userId)),
+              );
             }),
             SizedBox(height: 15),
-            _buildClickablePanel('Change Password', Icons.lock, () {
-              Navigator.pushNamed(context, '/change-password');
+            _buildClickablePanel('Time Period', Icons.access_time, () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        TimePeriodPage(userId: widget.userId)),
+              );
             }),
             SizedBox(height: 15),
             _buildClickablePanel('Sign Out', Icons.logout, () {
