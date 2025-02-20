@@ -2,14 +2,14 @@ flutter_native_splash:
   color: "#ffffff" 
   color_dark: "#272727"
   image: assets/splash_logo.png
-  image_dark: assets/splash_dark_logo.png
+  image_dark: assets/habify_logo.png
   
 
 
   android_12:
     color: "#FFFFFF" 
     color_dark: "#272727"
-    image: assets/splash_logo.png
+    image: assets/habify_logo.png
     image_dark: assets/splash_dark_logo.png
 
   web: false

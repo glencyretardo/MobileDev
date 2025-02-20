@@ -69,9 +69,7 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
       DateTime today = DateTime.now();
       int daysFromFirstHabit = today.difference(firstHabitDate!).inDays;
 
-      // Adjust scroll position to show today's week
-      double position = (daysFromFirstHabit - 3) *
-          50.0; // Center "today" in the middle of the visible 7 days
+      double position = (daysFromFirstHabit - 3) * 50.0; // Center "today"
       if (position < 0) {
         position = 0; // Prevent negative scroll positions
       }
@@ -82,22 +80,20 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
   @override
   Widget build(BuildContext context) {
     DateTime today = DateTime.now();
-    int daysFromFirstHabit =
-        firstHabitDate != null ? today.difference(firstHabitDate!).inDays : 0;
-    int totalDays = daysFromFirstHabit + 61;
-
-    // Determine the start of the week (Sunday)
-    DateTime startOfWeek = today.subtract(Duration(days: today.weekday % 7));
+    DateTime startDate =
+        firstHabitDate ?? today; // Start from first habit date or today
+    int totalDays =
+        today.difference(startDate).inDays + 30; // Include past and future days
 
     return Column(
       children: [
         // Header displaying the selected date
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
+          padding: const EdgeInsets.symmetric(vertical: 2.0),
           child: Text(
             DateFormat('MMMM d').format(selectedDate),
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -109,9 +105,9 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
               : ListView.builder(
                   controller: scrollController,
                   scrollDirection: Axis.horizontal,
-                  itemCount: totalDays, // Show only 7 days of the week
+                  itemCount: totalDays,
                   itemBuilder: (context, index) {
-                    DateTime date = startOfWeek.add(Duration(days: index));
+                    DateTime date = startDate.add(Duration(days: index));
                     bool isSelected = date.day == selectedDate.day &&
                         date.month == selectedDate.month &&
                         date.year == selectedDate.year;
@@ -132,9 +128,9 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
                         margin: EdgeInsets.symmetric(horizontal: 4),
                         decoration: BoxDecoration(
                           color: isToday
-                              ? const Color(0xFFEEAA3C)
+                              ? Color(0xFFA0CBCB)
                               : isSelected
-                                  ? const Color.fromARGB(255, 247, 155, 18)
+                                  ? const Color.fromARGB(255, 82, 137, 137)
                                   : const Color.fromARGB(255, 238, 238, 238),
                           shape: BoxShape.circle,
                         ),

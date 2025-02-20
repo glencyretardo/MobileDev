@@ -15,7 +15,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomAppBar(
-      color: Colors.green[100],
+      color: Colors.white, // Changed background color to white
       shape: const CircularNotchedRectangle(),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -25,7 +25,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
             onPressed: () => onNavItemTapped(0),
             icon: Icon(
               Icons.calendar_today,
-              color: selectedIndex == 0 ? Colors.green : Colors.grey,
+              color: selectedIndex == 0
+                  ? Color.fromARGB(255, 82, 137, 137)
+                  : Colors.grey, // Uniform active color
             ),
           ),
           // "History" Navigation Item
@@ -33,7 +35,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
             onPressed: () => onNavItemTapped(1),
             icon: Icon(
               Icons.history,
-              color: selectedIndex == 1 ? Colors.green : Colors.grey,
+              color: selectedIndex == 1
+                  ? Colors.teal
+                  : Colors.grey, // Uniform active color
             ),
           ),
           // "Me" Navigation Item
@@ -41,7 +45,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
             onPressed: () => onNavItemTapped(2),
             icon: Icon(
               Icons.person,
-              color: selectedIndex == 2 ? Colors.green : Colors.grey,
+              color: selectedIndex == 2
+                  ? Colors.teal
+                  : Colors.grey, // Uniform active color
             ),
           ),
         ],

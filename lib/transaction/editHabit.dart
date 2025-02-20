@@ -90,6 +90,7 @@ class _EditHabitPageState extends State<EditHabitPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('Edit Habit'),
       ),
@@ -106,8 +107,10 @@ class _EditHabitPageState extends State<EditHabitPage> {
                   controller: _habitNameController,
                   decoration: InputDecoration(
                     labelText: 'Habit Name',
-                    labelStyle:
-                        TextStyle(color: Color(0xFFEEAA3C)), // Label text color
+                    labelStyle: TextStyle(
+                        fontSize: 25,
+                        color: Color.fromARGB(
+                            255, 14, 52, 52)), // Label text color
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -123,8 +126,19 @@ class _EditHabitPageState extends State<EditHabitPage> {
                   onTap: _openColorPicker,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(8),
+                      color: Color(0xFFF7F7F7), // Off-white background
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                          color: Color.fromARGB(255, 82, 137, 137),
+                          width: 1.5), // Teal border
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color.fromARGB(
+                              100, 82, 137, 137), // Light teal shadow
+                          blurRadius: 5,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
                     padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                     child: Row(
@@ -132,8 +146,10 @@ class _EditHabitPageState extends State<EditHabitPage> {
                       children: [
                         Text(
                           "Color",
-                          style:
-                              TextStyle(fontSize: 16, color: Colors.grey[700]),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Color.fromARGB(255, 7, 34, 34),
+                          ),
                         ),
                         Row(
                           children: [
@@ -162,7 +178,7 @@ class _EditHabitPageState extends State<EditHabitPage> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFEEAA3C),
+                    color: Color.fromARGB(255, 14, 52, 52),
                   ),
                 ),
                 SizedBox(height: 8),
@@ -170,8 +186,19 @@ class _EditHabitPageState extends State<EditHabitPage> {
                 // DO IT AT Panel with Dropdown
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(8),
+                    color: Color(0xFFF7F7F7), // Off-white background
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: Color.fromARGB(255, 82, 137, 137),
+                        width: 1.5), // Teal border
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color.fromARGB(
+                            100, 82, 137, 137), // Light teal shadow
+                        blurRadius: 5,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
                   padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                   child: DropdownButtonHideUnderline(
@@ -186,7 +213,7 @@ class _EditHabitPageState extends State<EditHabitPage> {
                         });
                       },
                       style: TextStyle(
-                        color: Colors.grey[700],
+                        color: Color.fromARGB(255, 7, 34, 34),
                         fontSize: 16,
                       ),
                       items: <String>[
@@ -211,7 +238,7 @@ class _EditHabitPageState extends State<EditHabitPage> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFEEAA3C),
+                    color: Color.fromARGB(255, 14, 52, 52),
                   ),
                 ),
                 SizedBox(height: 8),
@@ -222,7 +249,27 @@ class _EditHabitPageState extends State<EditHabitPage> {
                   children: ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa']
                       .map((day) => ChoiceChip(
                             label: Text(day),
+                            labelStyle: TextStyle(
+                              color: _selectedDays.contains(day)
+                                  ? Colors
+                                      .white // White text for selected chips
+                                  : Color.fromARGB(255, 82, 137,
+                                      137), // Teal text for unselected chips
+                              fontWeight: FontWeight.bold,
+                            ),
                             selected: _selectedDays.contains(day),
+                            selectedColor: Color.fromARGB(
+                                255, 82, 137, 137), // Teal for selected chips
+                            backgroundColor: Color(
+                                0xFFF7F7F7), // Off-white for unselected chips
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              side: BorderSide(
+                                color: Color.fromARGB(
+                                    255, 82, 137, 137), // Teal border
+                                width: 1.5,
+                              ),
+                            ),
                             onSelected: (selected) {
                               setState(() {
                                 if (selected) {
@@ -237,6 +284,7 @@ class _EditHabitPageState extends State<EditHabitPage> {
                           ))
                       .toList(),
                 ),
+
                 SizedBox(height: 16),
 
                 // NOTE Title
@@ -245,7 +293,7 @@ class _EditHabitPageState extends State<EditHabitPage> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFEEAA3C),
+                    color: Color.fromARGB(255, 14, 52, 52),
                   ),
                 ),
                 SizedBox(height: 8),
@@ -253,9 +301,19 @@ class _EditHabitPageState extends State<EditHabitPage> {
                 // Note Field inside a box
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey),
+                    color: Color(0xFFF7F7F7), // Off-white background
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: Color.fromARGB(255, 82, 137, 137),
+                        width: 1.5), // Teal border
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color.fromARGB(
+                            100, 82, 137, 137), // Light teal shadow
+                        blurRadius: 5,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   child: TextField(
@@ -268,13 +326,28 @@ class _EditHabitPageState extends State<EditHabitPage> {
                 SizedBox(height: 30),
 
                 // Save Button
-                ElevatedButton(
+                // Save Button
+                TextButton(
                   onPressed: () {
                     if (_formKey.currentState?.validate() ?? false) {
                       _saveEdits();
                     }
                   },
-                  child: Text('Save Changes'),
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 50),
+                    backgroundColor:
+                        Color.fromARGB(255, 31, 77, 77), // Background color
+                    foregroundColor: Colors
+                        .white, // Text color // Text color matching the desired design
+                  ),
+                  child: const Text(
+                    'Save Changes',
+                    style: TextStyle(
+                      fontWeight:
+                          FontWeight.bold, // Make the text bold for emphasis
+                      fontSize: 16, // Adjust the font size as needed
+                    ),
+                  ),
                 ),
               ],
             ),

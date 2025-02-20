@@ -83,11 +83,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    backgroundColor:
+    Colors.white;
     return Scaffold(
       appBar: AppBar(
         title: Text('Edit Profile'),
         centerTitle: true,
-        backgroundColor: const Color(0xFFEEAA3C),
+        //backgroundColor: const Color(0xFFEEAA3C),
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -113,10 +115,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       readOnly: true, // Email is not editable
                       decoration: InputDecoration(
                         labelText: 'Email',
-                        labelStyle: TextStyle(color: const Color(0xFFEEAA3C)),
+                        labelStyle: TextStyle(
+                            fontSize: 20,
+                            color: const Color.fromARGB(255, 14, 52, 52)),
                         focusedBorder: UnderlineInputBorder(
-                          borderSide:
-                              BorderSide(color: const Color(0xFFEEAA3C)),
+                          borderSide: BorderSide(
+                              color: Color.fromARGB(255, 82, 137, 137)),
                         ),
                       ),
                     ),
@@ -125,7 +129,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       initialValue: _username,
                       decoration: InputDecoration(
                         labelText: 'Username',
-                        labelStyle: TextStyle(color: const Color(0xFFEEAA3C)),
+                        labelStyle: TextStyle(
+                          fontSize: 20,
+                          color: const Color.fromARGB(255, 14, 52, 52),
+                        ),
                         focusedBorder: UnderlineInputBorder(
                           borderSide:
                               BorderSide(color: const Color(0xFFEEAA3C)),
@@ -140,25 +147,33 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     SizedBox(height: 50),
                     Center(
                       child: ElevatedButton(
-                        onPressed: _saveProfile,
-                        child: Text(
-                          'Save',
-                          style: TextStyle(color: Colors.white),
-                        ),
+                        onPressed:
+                            _saveProfile, // Functionality remains unchanged
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFEEAA3C),
+                          minimumSize: const Size(double.infinity,
+                              50), // Full width button like TextButton
+                          backgroundColor: Color.fromARGB(
+                              255, 82, 137, 137), // Button background color
+                          foregroundColor:
+                              Colors.white, // Text color set to white
                           padding: EdgeInsets.symmetric(
-                              horizontal: 100, vertical: 16),
+                              horizontal: 100, vertical: 16), // Custom padding
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                            borderRadius:
+                                BorderRadius.circular(30), // Rounded corners
                           ),
-                          textStyle: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                        ),
+                        child: const Text(
+                          'Save', // Button text
+                          style: TextStyle(
+                            fontSize: 18, // Font size
+                            fontWeight: FontWeight.bold, // Bold text
+                            color: Colors
+                                .white, // Make sure this is not overriding foregroundColor
                           ),
                         ),
                       ),
-                    ),
+                    )
                   ],
                 ),
               ),
@@ -185,7 +200,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 shape: BoxShape.circle,
                 border: _selectedImage == _imageList[index]
                     ? Border.all(
-                        color: const Color(0xFFEEAA3C),
+                        color: Color.fromARGB(255, 82, 137, 137),
                         width: 3,
                       )
                     : null,

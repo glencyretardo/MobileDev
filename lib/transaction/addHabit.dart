@@ -123,11 +123,11 @@ class _AddHabitPageState extends State<AddHabitPage> {
         if (user != null) {
           Map<String, bool> completionStatus = {};
           DateTime today = DateTime.now();
-          for (int i = 0; i < 30; i++) {
-            String date =
-                today.add(Duration(days: i)).toIso8601String().split('T')[0];
-            completionStatus[date] = false;
-          }
+
+          // Add only the current date
+          String formattedDate = today.toIso8601String().split('T')[0];
+          completionStatus[formattedDate] = false;
+
           await FirebaseFirestore.instance
               .collection('users')
               .doc(user.uid)
@@ -191,7 +191,7 @@ class _AddHabitPageState extends State<AddHabitPage> {
                 decoration: InputDecoration(
                   hintText: "Habit Name",
                   hintStyle: TextStyle(
-                    color: Colors.grey[600],
+                    color: Color.fromARGB(255, 14, 52, 52),
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
@@ -212,8 +212,19 @@ class _AddHabitPageState extends State<AddHabitPage> {
                 onTap: _openColorPicker,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Color(0xFFB0D8D3),
+                    color: Color(0xFFF7F7F7), // Off-white background
                     borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: Color.fromARGB(255, 82, 137, 137),
+                        width: 1.5), // Teal border
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color.fromARGB(
+                            100, 82, 137, 137), // Light teal shadow
+                        blurRadius: 5,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
                   padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   child: Row(
@@ -251,7 +262,7 @@ class _AddHabitPageState extends State<AddHabitPage> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFEEAA3C),
+                  color: Color.fromARGB(255, 14, 52, 52),
                 ),
               ),
               SizedBox(height: 8),
@@ -259,8 +270,19 @@ class _AddHabitPageState extends State<AddHabitPage> {
               // DO IT AT Panel with Dropdown
               Container(
                 decoration: BoxDecoration(
-                  color: Color(0xFFB0D8D3),
+                  color: Color(0xFFF7F7F7), // Off-white background
                   borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                      color: Color.fromARGB(255, 82, 137, 137),
+                      width: 1.5), // Teal border
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color.fromARGB(
+                          100, 82, 137, 137), // Light teal shadow
+                      blurRadius: 5,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 child: DropdownButtonHideUnderline(
@@ -296,7 +318,7 @@ class _AddHabitPageState extends State<AddHabitPage> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFEEAA3C),
+                  color: Color.fromARGB(255, 14, 52, 52),
                 ),
               ),
               SizedBox(height: 8),
@@ -306,8 +328,19 @@ class _AddHabitPageState extends State<AddHabitPage> {
                 onTap: _openDaysSelectionDialog,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Color(0xFFB0D8D3),
+                    color: Color(0xFFF7F7F7), // Off-white background
                     borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: Color.fromARGB(255, 82, 137, 137),
+                        width: 1.5), // Teal border
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color.fromARGB(
+                            100, 82, 137, 137), // Light teal shadow
+                        blurRadius: 5,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
                   padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   child: Row(
@@ -332,14 +365,25 @@ class _AddHabitPageState extends State<AddHabitPage> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFEEAA3C),
+                  color: Color.fromARGB(255, 14, 52, 52),
                 ),
               ),
               SizedBox(height: 8),
               Container(
                 decoration: BoxDecoration(
-                  color: Color(0xFFB0D8D3),
+                  color: Color(0xFFF7F7F7), // Off-white background
                   borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                      color: Color.fromARGB(255, 82, 137, 137),
+                      width: 1.5), // Teal border
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color.fromARGB(
+                          100, 82, 137, 137), // Light teal shadow
+                      blurRadius: 5,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: TextField(
@@ -356,20 +400,25 @@ class _AddHabitPageState extends State<AddHabitPage> {
               // Save Button
               Center(
                 child: ElevatedButton(
-                  onPressed: _saveHabit,
+                  onPressed: _saveHabit, // Retains the original functionality
                   style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                    backgroundColor: Color(0xFFEEAA3C),
+                    minimumSize:
+                        const Size(double.infinity, 50), // Full-width button
+                    backgroundColor: Color.fromARGB(
+                        255, 31, 77, 77), // Button background color
+                    foregroundColor: Colors.white, // Text color
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius:
+                          BorderRadius.circular(12), // Rounded corners
                     ),
+                    padding:
+                        EdgeInsets.symmetric(vertical: 16), // Vertical padding
                   ),
-                  child: Text(
+                  child: const Text(
                     "Save Habit",
                     style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      fontWeight: FontWeight.bold, // Bold text
+                      fontSize: 16, // Font size
                     ),
                   ),
                 ),

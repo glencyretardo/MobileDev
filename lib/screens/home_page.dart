@@ -17,10 +17,13 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String? selectedFilter = "ALL";
   DateTime selectedDate = DateTime.now(); // To track the selected date
+  String selectedDateString = DateFormat('yyyy-MM-dd')
+      .format(DateTime.now()); // Declare selectedDateString
 
   @override
   void initState() {
     super.initState();
+    selectedDateString = DateFormat('yyyy-MM-dd').format(selectedDate);
     testFirestoreQuery(); // Call the debug function here
   }
 
@@ -46,18 +49,38 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showHabitDetails(BuildContext context, DocumentSnapshot habit) {
+    // List of all days of the week
+    List<String> allDays = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
+
+    // Get the days from Firestore
+    List<String> habitDays = List<String>.from(habit['days'] ?? []);
+
+    // Check if the number of selected days matches all 7 days
+    String repetition = habitDays.length == 7
+        ? 'Everyday'
+        : (habitDays.isEmpty ? 'Not Set' : habitDays.join(', '));
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(habit['habitName']),
+          title: Text(
+            habit['habitName'],
+            style: TextStyle(fontSize: 25),
+          ),
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Repetition: ${habit['days'] ?? 'Not Set'}'),
-              Text('Time: ${habit['time'] ?? 'Not Set'}'),
-              Text('Notes: ${habit['note'] ?? 'No notes'}'),
+              Text('Repetition: $repetition', style: TextStyle(fontSize: 16)),
+              Text(
+                'Time: ${habit['time'] ?? 'Not Set'}',
+                style: TextStyle(fontSize: 16),
+              ),
+              Text(
+                'Notes: ${habit['note'] ?? 'No notes'}',
+                style: TextStyle(fontSize: 16),
+              ),
             ],
           ),
           actions: [
@@ -175,7 +198,7 @@ class _HomePageState extends State<HomePage> {
                   icon: Icon(
                     Icons.add,
                     size: 40,
-                    color: Color(0xFFEEAA3C),
+                    color: Color.fromARGB(255, 82, 137, 137),
                   ),
                 ),
               ],
@@ -268,7 +291,7 @@ class _HomePageState extends State<HomePage> {
               stream: FirebaseFirestore.instance
                   .collection('users')
                   .doc(widget.userId)
-                  .collection('habits')
+                  .collection('habits') // Filter habits by selected day
                   .orderBy('createdAt',
                       descending:
                           false) // Ensure habits are ordered by creation date
@@ -290,6 +313,7 @@ class _HomePageState extends State<HomePage> {
                 final selectedDayInitial = dayInitials[selectedDayIndex];
 
                 final habits = snapshot.data!.docs;
+
                 final filteredHabits = habits.where((habit) {
                   final days = habit['days'] ?? [];
                   final createdAt =
@@ -298,26 +322,16 @@ class _HomePageState extends State<HomePage> {
                       ''; // Time field (MORNING, AFTERNOON, EVENING, ANYTIME)
 
                   if (days is List) {
-                    // Check if the habit's creation date is before or equal to the selected date
                     bool isCreatedBeforeOrOnSelectedDate = createdAt == null ||
                         createdAt.isBefore(selectedDate) ||
                         createdAt.isAtSameMomentAs(selectedDate);
 
-                    // Filter by days and check if the habit is created before or on the selected date
                     bool isSelectedDay = days.contains(selectedDayInitial);
 
-                    /// Apply time filter based on selectedFilter
-                    // Apply time filter based on selectedFilter
-                    String habitTime =
-                        habit['time'] ?? ''; // Ensure habitTime is never null
-
-// Now you can safely call toUpperCase()
                     bool isTimeMatch = selectedFilter == "ALL" ||
                         selectedFilter == "ANYTIME" ||
                         habitTime.toUpperCase() ==
-                            (selectedFilter ?? "")
-                                .toUpperCase(); // Ensure selectedFilter is also non-null
-// No need for `?` here
+                            (selectedFilter ?? "").toUpperCase();
 
                     return isCreatedBeforeOrOnSelectedDate &&
                         isSelectedDay &&
@@ -326,29 +340,40 @@ class _HomePageState extends State<HomePage> {
                   return false;
                 }).toList();
 
-                if (filteredHabits.isEmpty) {
+                // Sorting logic
+                final sortedHabits = [...filteredHabits]..sort((a, b) {
+                    final isCompletedA =
+                        (a['completionStatus']?[selectedDateString] ?? false);
+                    final isCompletedB =
+                        (b['completionStatus']?[selectedDateString] ?? false);
+                    return isCompletedA == isCompletedB
+                        ? 0
+                        : (isCompletedA ? 1 : -1);
+                  });
+
+                if (sortedHabits.isEmpty) {
                   return Center(
                       child: Text("No habits for the selected filter."));
                 }
 
-                final selectedDateString =
-                    DateFormat('yyyy-MM-dd').format(selectedDate);
-
                 return ListView.builder(
-                  itemCount: filteredHabits.length,
+                  itemCount: sortedHabits.length,
                   itemBuilder: (context, index) {
-                    final habit = filteredHabits[index];
+                    final habit = sortedHabits[index];
                     final habitName = habit['habitName'];
                     int colorValue = habit['color'];
                     Map<String, dynamic> completionStatus =
                         habit['completionStatus'] ?? {};
 
-                    // Determine completion for the selected date
+                    bool isFutureDate = selectedDate.isAfter(DateTime.now());
+
+                    if (!completionStatus.containsKey(selectedDateString)) {
+                      completionStatus[selectedDateString] = false;
+                    }
+
                     bool isCompleted =
                         completionStatus[selectedDateString] ?? false;
 
-                    // Determine if the selected date is in the future
-                    bool isFutureDate = selectedDate.isAfter(DateTime.now());
                     Color habitColor =
                         isCompleted ? Colors.grey[200]! : Color(colorValue);
 
@@ -370,17 +395,20 @@ class _HomePageState extends State<HomePage> {
                                 Checkbox(
                                   value: isCompleted,
                                   onChanged: (value) async {
-                                    completionStatus[selectedDateString] =
-                                        value;
-                                    await FirebaseFirestore.instance
-                                        .collection('users')
-                                        .doc(widget.userId)
-                                        .collection('habits')
-                                        .doc(habit.id)
-                                        .update({
-                                      'completionStatus': completionStatus
-                                    });
-                                    setState(() {});
+                                    try {
+                                      completionStatus[selectedDateString] =
+                                          value;
+                                      await FirebaseFirestore.instance
+                                          .collection('users')
+                                          .doc(widget.userId)
+                                          .collection('habits')
+                                          .doc(habit.id)
+                                          .update({
+                                        'completionStatus': completionStatus
+                                      });
+                                    } catch (e) {
+                                      print('Failed to update completion: $e');
+                                    }
                                   },
                                 ),
                               Expanded(
@@ -390,6 +418,7 @@ class _HomePageState extends State<HomePage> {
                                     color: isCompleted
                                         ? Colors.black45
                                         : Colors.white,
+                                    fontSize: 16,
                                     decoration: isCompleted
                                         ? TextDecoration.lineThrough
                                         : null,

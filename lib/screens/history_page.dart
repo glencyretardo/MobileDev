@@ -41,6 +41,7 @@ class _HistoryPageState extends State<HistoryPage> {
       final data = await _getWeeklyCompletion(widget.userId);
       setState(() {
         _weeklyCompletionData = data;
+        print("Debug: Weekly completion data loaded: $_weeklyCompletionData");
       });
     } catch (e) {
       print("Error loading weekly completion data: $e");
@@ -64,31 +65,52 @@ class _HistoryPageState extends State<HistoryPage> {
         elevation: 0,
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 8),
-          _buildTabBar(),
-          const SizedBox(height: 16),
-
-          // Conditionally show the Stat Row and Calendar only for Achievements tab
-          if (selectedTabIndex == 0) ...[
-            _buildStatRow(),
-            const SizedBox(height: 16),
-            _buildCalendarHeader(),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
             const SizedBox(height: 8),
-          ],
+            _buildTabBar(),
+            const SizedBox(height: 8),
 
-          // Main content area
-          Expanded(
-            child: selectedTabIndex == 1
-                ? _buildAllHabitsWidget()
-                : Column(
-                    children: [
-                      Expanded(child: CalendarGrid()),
-                    ],
-                  ),
-          ),
-        ],
+            // Conditionally show the Stat Row and Calendar only for Achievements tab
+            if (selectedTabIndex == 0) ...[
+              Padding(
+                padding:
+                    const EdgeInsets.only(top: 40.0), // Move stat boxes down
+                child: _weeklyCompletionData == null
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _statBox("CURRENT STREAK", "Loading..."),
+                          const SizedBox(height: 16), // Spacing between boxes
+                          _statBox("WEEKLY COMPLETION RATE", "Loading..."),
+                        ],
+                      )
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _statBox("CURRENT STREAK",
+                              "${_weeklyCompletionData?['streak']}"),
+                          const SizedBox(height: 16),
+                          _statBox("WEEKLY COMPLETION RATE",
+                              "${_weeklyCompletionData?['completed']}/${_weeklyCompletionData?['total']}"),
+                        ],
+                      ),
+              ),
+              const SizedBox(height: 8),
+              _buildCalendarHeader(),
+              const SizedBox(height: 8),
+            ],
+
+            Container(
+              height: MediaQuery.of(context).size.height *
+                  0.7, // Limit to 70% of screen height
+              child: selectedTabIndex == 1
+                  ? _buildAllHabitsWidget()
+                  : CalendarGrid(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -130,7 +152,9 @@ class _HistoryPageState extends State<HistoryPage> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFFEEAA3C) : Colors.transparent,
+            color: isSelected
+                ? Color.fromARGB(255, 82, 137, 137)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
@@ -205,115 +229,54 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
-  Widget _buildStatRow() {
-    return _weeklyCompletionData == null
-        ? Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _statBox("CURRENT STREAK", "Loading..."),
-                _statBox("COMPLETION RATE", "Loading..."),
-              ],
-            ),
-          )
-        : Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                    child: _statBox("CURRENT STREAK",
-                        "${_weeklyCompletionData?['streak']}")),
-                Expanded(
-                    child: _statBox("COMPLETION RATE",
-                        "${_weeklyCompletionData?['completed']}/${_weeklyCompletionData?['total']}")),
-              ],
-            ),
-          );
-  }
-
-  Future<Map<String, dynamic>> _getWeeklyCompletion(String userId) async {
-    try {
-      QuerySnapshot habitSnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection('habits')
-          .get();
-
-      int totalHabits = habitSnapshot.docs.length * 7;
-      int completedHabits = 0;
-
-      DateTime today = DateTime.now();
-      DateTime oneWeekAgo = today.subtract(Duration(days: 7));
-
-      for (var habit in habitSnapshot.docs) {
-        Map<String, dynamic> completionStatus = habit['completionStatus'] ?? {};
-
-        completionStatus.forEach((date, status) {
-          DateTime habitDate = DateTime.parse(date);
-          if (habitDate.isAfter(oneWeekAgo) &&
-              habitDate.isBefore(today.add(Duration(days: 1)))) {
-            if (status == true) {
-              completedHabits++;
-            }
-          }
-        });
-      }
-
-      return {
-        'streak': await streakCalculator.calculateStreak(userId),
-        'completed': completedHabits,
-        'total': totalHabits,
-      };
-    } catch (e) {
-      print("Error fetching weekly completion: $e");
-      return {'streak': 0, 'completed': 0, 'total': 0};
-    }
-  }
-
   Widget _statBox(String title, String value) {
     return Container(
-      width: MediaQuery.of(context).size.width * 0.42,
-      padding: const EdgeInsets.all(16),
+      width: 300, // Smaller fixed width for compact design
+      height: 60, // Reduced height
+      padding: const EdgeInsets.symmetric(
+          horizontal: 8, vertical: 8), // Compact padding
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFFFF8E1), Color(0xFFFFECB3)],
+          colors: [
+            Color(0xFFFFF8E1),
+            Color(0xFFA0CBCB),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8), // Rounded corners
         boxShadow: [
           BoxShadow(
             color: Colors.black12,
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+            blurRadius: 4, // Subtle shadow for a smaller box
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             title,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 12, // Smaller font size for title
               fontWeight: FontWeight.bold,
               color: Colors.grey[700],
             ),
+            textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
-            softWrap: true,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4), // Tiny spacing between title and value
           Text(
             value,
             style: const TextStyle(
-              fontSize: 22,
+              fontSize: 16, // Bold and slightly larger for emphasis
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
+            textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
-            softWrap: true,
           ),
         ],
       ),
@@ -322,7 +285,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
   Widget _buildCalendarHeader() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.only(top: 32.0),
       child: Text(
         "${_monthName(DateTime.now().month)} ${DateTime.now().year}",
         style: const TextStyle(
@@ -350,6 +313,54 @@ class _HistoryPageState extends State<HistoryPage> {
       "December"
     ];
     return months[month - 1];
+  }
+
+  Future<Map<String, dynamic>> _getWeeklyCompletion(String userId) async {
+    try {
+      QuerySnapshot habitSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('habits')
+          .get();
+
+      print(
+          "Debug: Habit snapshot fetched with ${habitSnapshot.docs.length} habits.");
+
+      int totalHabits = habitSnapshot.docs.length * 7;
+      int completedHabits = 0;
+
+      DateTime today = DateTime.now();
+      DateTime oneWeekAgo = today.subtract(Duration(days: 7));
+
+      for (var habit in habitSnapshot.docs) {
+        Map<String, dynamic> completionStatus = habit['completionStatus'] ?? {};
+        print(
+            "Debug: CompletionStatus for habit ${habit.id}: $completionStatus");
+
+        completionStatus.forEach((date, status) {
+          DateTime habitDate = DateTime.parse(date);
+          if (habitDate.isAfter(oneWeekAgo) &&
+              habitDate.isBefore(today.add(Duration(days: 1)))) {
+            if (status == true) {
+              completedHabits++;
+            }
+          }
+        });
+      }
+      print(
+          "Debug: Total habits = $totalHabits, Completed habits = $completedHabits");
+
+      int streak = await streakCalculator.calculateStreak(userId);
+      print("Debug: Calculated streak = $streak");
+      return {
+        'streak': await streakCalculator.calculateStreak(userId),
+        'completed': completedHabits,
+        'total': totalHabits,
+      };
+    } catch (e) {
+      print("Error fetching weekly completion: $e");
+      return {'streak': 0, 'completed': 0, 'total': 0};
+    }
   }
 }
 
@@ -405,7 +416,9 @@ class CalendarGrid extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: isToday ? const Color(0xFFFFC107) : Colors.grey[200],
+                    color: isToday
+                        ? const Color.fromARGB(255, 82, 137, 137)
+                        : Colors.grey[200],
                     shape: BoxShape.circle,
                     boxShadow: isToday
                         ? [
@@ -421,9 +434,10 @@ class CalendarGrid extends StatelessWidget {
                     child: Text(
                       "$day",
                       style: TextStyle(
-                        color: isToday ? Colors.white : Colors.black87,
-                        fontWeight:
-                            isToday ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: FontWeight.bold,
+                        color: isToday
+                            ? Colors.white
+                            : Colors.black87.withOpacity(0.7),
                       ),
                     ),
                   ),

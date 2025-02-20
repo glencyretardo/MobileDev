@@ -189,16 +189,20 @@ class _TimePeriodPageState extends State<TimePeriodPage> {
         ),
       ),
       body: _isLoading
-          ? Center(
-              child:
-                  CircularProgressIndicator()) // Show loading indicator while fetching data
+          ? Center(child: CircularProgressIndicator()) // Show loading indicator
           : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
+                // Add space above the containers
+                const SizedBox(height: 20),
+
+                // Use a Flexible to allow ListView to take the remaining space
+                Flexible(
                   child: ListView(
                     children: periodOrder.map((period) {
                       if (timePeriods.containsKey(period)) {
                         TimeOfDay time = timePeriods[period]!;
+
                         return _buildTimeRow(
                           period,
                           period == 'End of the Day' ? 'Ends at' : 'Starts at',
@@ -206,13 +210,15 @@ class _TimePeriodPageState extends State<TimePeriodPage> {
                           () => _selectTime(period),
                         );
                       } else {
-                        // Handle the case where the period is not in the Firestore data
-                        return Container(); // Or add some placeholder widget
+                        return Container(); // Or some placeholder widget
                       }
                     }).toList(),
                   ),
                 ),
-                const SizedBox(height: 16),
+
+                // Add space between the containers and the button
+                const SizedBox(height: 30),
+
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: ElevatedButton(
@@ -222,7 +228,8 @@ class _TimePeriodPageState extends State<TimePeriodPage> {
                     },
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size(double.infinity, 50),
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Color.fromARGB(255, 82, 137, 137),
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -234,7 +241,7 @@ class _TimePeriodPageState extends State<TimePeriodPage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 50), // Space after the button
               ],
             ),
     );

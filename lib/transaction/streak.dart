@@ -16,7 +16,7 @@ class StreakCalculator {
           .get();
 
       print("Fetched habitSnapshot: ${habitSnapshot.docs.length} habits found");
-
+         print("Debug: Streak calculation started for user $userId");
       Map<String, bool> aggregatedCompletion = {};
 
       // Step 2: Aggregate completionStatus from all habits
